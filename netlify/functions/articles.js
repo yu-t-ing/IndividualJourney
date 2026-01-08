@@ -35,6 +35,55 @@ exports.handler = async (event) => {
       });
     }
 
+    if ((qs.debug || '').toLowerCase() === 'db') {
+      try {
+        const r = await query('select 1 as ok');
+        return json(200, {
+          data: {
+            ok: r?.rows?.[0]?.ok === 1,
+            has_NETLIFY_DATABASE_URL: !!process.env.NETLIFY_DATABASE_URL,
+            has_NETLIFY_DATABASE_URL_UNPOOLED: !!process.env.NETLIFY_DATABASE_URL_UNPOOLED,
+            has_DATABASE_URL: !!process.env.DATABASE_URL
+          }
+        });
+      } catch (e) {
+        return json(200, {
+          data: {
+            ok: false,
+            error: e?.message || 'unknown',
+            has_NETLIFY_DATABASE_URL: !!process.env.NETLIFY_DATABASE_URL,
+            has_NETLIFY_DATABASE_URL_UNPOOLED: !!process.env.NETLIFY_DATABASE_URL_UNPOOLED,
+            has_DATABASE_URL: !!process.env.DATABASE_URL
+          }
+        });
+      }
+    }
+
+    if ((qs.debug || '').toLowerCase() === 'dbinfo') {
+      try {
+        const r = await query(
+          "select current_database() as db, current_user as user, current_schema() as schema, current_setting('search_path') as search_path, to_regclass('public.articles') as public_articles, to_regclass('articles') as articles"
+        );
+        return json(200, {
+          data: {
+            ...((r && r.rows && r.rows[0]) ? r.rows[0] : {}),
+            has_NETLIFY_DATABASE_URL: !!process.env.NETLIFY_DATABASE_URL,
+            has_NETLIFY_DATABASE_URL_UNPOOLED: !!process.env.NETLIFY_DATABASE_URL_UNPOOLED,
+            has_DATABASE_URL: !!process.env.DATABASE_URL
+          }
+        });
+      } catch (e) {
+        return json(200, {
+          data: {
+            error: e?.message || 'unknown',
+            has_NETLIFY_DATABASE_URL: !!process.env.NETLIFY_DATABASE_URL,
+            has_NETLIFY_DATABASE_URL_UNPOOLED: !!process.env.NETLIFY_DATABASE_URL_UNPOOLED,
+            has_DATABASE_URL: !!process.env.DATABASE_URL
+          }
+        });
+      }
+    }
+
     const id = parseIdFromPath(event.path || '');
 
     if (method === 'GET' && !id) {
@@ -44,7 +93,7 @@ exports.handler = async (event) => {
 
       if (mode === 'public') {
         const r = await query(
-          'select id, user_id, title, category, content, is_public, fingerprint, created_at, updated_at from articles where is_public = true order by created_at desc offset $1 limit $2',
+          'select id, user_id, title, category, content, is_public, fingerprint, created_at, updated_at from public.articles where is_public = true order by created_at desc offset $1 limit $2',
           [from, limit]
         );
         return json(200, { data: r.rows });
@@ -52,7 +101,7 @@ exports.handler = async (event) => {
 
       const user = await requireUser(event);
       const r = await query(
-        'select id, user_id, title, category, content, is_public, fingerprint, created_at, updated_at from articles where user_id = $1 order by created_at desc offset $2 limit $3',
+        'select id, user_id, title, category, content, is_public, fingerprint, created_at, updated_at from public.articles where user_id = $1 order by created_at desc offset $2 limit $3',
         [user.id, from, limit]
       );
       return json(200, { data: r.rows });
@@ -72,7 +121,7 @@ exports.handler = async (event) => {
       if (!title || !content) return json(400, { error: 'Missing title or content' });
 
       const r = await query(
-        'insert into articles (user_id, title, category, content, is_public, fingerprint, created_at) values ($1,$2,$3,$4,$5,$6, coalesce($7, now())) on conflict (user_id, fingerprint) do update set title = excluded.title, category = excluded.category, content = excluded.content, is_public = excluded.is_public, updated_at = now() returning id, user_id, title, category, content, is_public, fingerprint, created_at, updated_at',
+        'insert into public.articles (user_id, title, category, content, is_public, fingerprint, created_at) values ($1,$2,$3,$4,$5,$6, coalesce($7, now())) on conflict (user_id, fingerprint) do update set title = excluded.title, category = excluded.category, content = excluded.content, is_public = excluded.is_public, updated_at = now() returning id, user_id, title, category, content, is_public, fingerprint, created_at, updated_at',
         [user.id, title, category, content, is_public, fingerprint, created_at]
       );
 
@@ -115,7 +164,7 @@ exports.handler = async (event) => {
       values.push(user.id);
 
       const r = await query(
-        `update articles set ${fields.join(', ')} where id = $${i++} and user_id = $${i++} returning id, user_id, title, category, content, is_public, fingerprint, created_at, updated_at`,
+        `update public.articles set ${fields.join(', ')} where id = $${i++} and user_id = $${i++} returning id, user_id, title, category, content, is_public, fingerprint, created_at, updated_at`,
         values
       );
 
@@ -125,7 +174,7 @@ exports.handler = async (event) => {
 
     if (method === 'DELETE' && id) {
       const user = await requireUser(event);
-      const r = await query('delete from articles where id = $1 and user_id = $2 returning id', [id, user.id]);
+      const r = await query('delete from public.articles where id = $1 and user_id = $2 returning id', [id, user.id]);
       if (!r.rows.length) return json(404, { error: 'Not found' });
       return json(200, { data: { id: r.rows[0].id } });
     }
