@@ -121,7 +121,7 @@ exports.handler = async (event) => {
       if (!title || !content) return json(400, { error: 'Missing title or content' });
 
       const r = await query(
-        'insert into public.articles (user_id, title, category, content, is_public, fingerprint, created_at) values ($1,$2,$3,$4,$5,$6, coalesce($7, now())) on conflict (user_id, fingerprint) do update set title = excluded.title, category = excluded.category, content = excluded.content, is_public = excluded.is_public, updated_at = now() returning id, user_id, title, category, content, is_public, fingerprint, created_at, updated_at',
+        'insert into public.articles (user_id, title, category, content, is_public, fingerprint, created_at) values ($1,$2,$3,$4,$5,$6, coalesce($7, now())) on conflict (user_id, fingerprint) where fingerprint is not null do update set title = excluded.title, category = excluded.category, content = excluded.content, is_public = excluded.is_public, updated_at = now() returning id, user_id, title, category, content, is_public, fingerprint, created_at, updated_at',
         [user.id, title, category, content, is_public, fingerprint, created_at]
       );
 

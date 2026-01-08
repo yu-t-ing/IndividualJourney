@@ -96,7 +96,7 @@ exports.handler = async (event) => {
       if (!images.length) return json(400, { error: 'Missing images' });
 
       const r = await query(
-        'insert into public.life_records (user_id, images, description, is_public, fingerprint, created_at) values ($1,$2::jsonb,$3,$4,$5, coalesce($6, now())) on conflict (user_id, fingerprint) do update set images = excluded.images, description = excluded.description, is_public = excluded.is_public, updated_at = now() returning id, user_id, images, description, is_public, fingerprint, created_at, updated_at',
+        'insert into public.life_records (user_id, images, description, is_public, fingerprint, created_at) values ($1,$2::jsonb,$3,$4,$5, coalesce($6, now())) on conflict (user_id, fingerprint) where fingerprint is not null do update set images = excluded.images, description = excluded.description, is_public = excluded.is_public, updated_at = now() returning id, user_id, images, description, is_public, fingerprint, created_at, updated_at',
         [user.id, JSON.stringify(images), description, is_public, fingerprint, created_at]
       );
 
