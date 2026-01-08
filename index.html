@@ -1,0 +1,3428 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Space | Curated Life</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/turndown/7.1.2/turndown.min.js"></script>
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Base Transitions */
+        body {
+            transition: background 0.7s ease, color 0.5s ease;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background-color: var(--scrollbar-thumb); border-radius: 10px; }
+
+        /* Reading Progress */
+        #progress-bar { width: 0%; transition: width 0.1s linear; }
+
+        /* Typography Override */
+        .markdown-body h1 { font-size: 2.25rem; line-height: 2.5rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 1.5rem; margin-top: 2rem; color: var(--text-main); }
+        .markdown-body h2 { font-size: 1.5rem; line-height: 2rem; font-weight: 600; letter-spacing: -0.025em; margin-bottom: 1rem; margin-top: 2rem; color: var(--text-main); }
+        .markdown-body p { margin-bottom: 1.25rem; line-height: 1.8; color: var(--text-muted); font-size: 1.05rem; }
+        .markdown-body ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-muted); }
+        .markdown-body blockquote { border-left: 3px solid var(--accent); padding-left: 1.25rem; font-style: italic; color: var(--text-main); background: var(--bg-surface-hover); padding-top: 0.5rem; padding-bottom: 0.5rem; border-radius: 0 8px 8px 0; }
+
+        /* Glass Utilities */
+        .glass-panel {
+            background: var(--card-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-glass {
+            background: var(--nav-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* Animations */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* Rich Text Editor Styles */
+        #article-content h1 { font-size: 2em; font-weight: bold; margin: 0.5em 0; }
+        #article-content h2 { font-size: 1.5em; font-weight: bold; margin: 0.5em 0; }
+        #article-content h3 { font-size: 1.25em; font-weight: bold; margin: 0.5em 0; }
+        #article-content p { margin: 0.5em 0; }
+        #article-content ul, #article-content ol { padding-left: 1.5em; margin: 0.5em 0; }
+        #article-content li { margin: 0.25em 0; }
+        #article-content blockquote { 
+            border-left: 4px solid var(--accent); 
+            padding-left: 1em; 
+            margin: 1em 0; 
+            color: var(--text-muted);
+            font-style: italic;
+            background: var(--bg-surface);
+            padding: 0.5em 1em;
+            border-radius: 0 8px 8px 0;
+        }
+        #article-content a { color: var(--accent); text-decoration: underline; }
+        #article-content pre { 
+            background: var(--bg-surface); 
+            padding: 12px; 
+            border-radius: 8px; 
+            overflow-x: auto; 
+            font-family: monospace;
+            border: 1px solid var(--border);
+            margin: 0.5em 0;
+        }
+        #article-content hr { 
+            border: none; 
+            border-top: 2px solid var(--border); 
+            margin: 1.5em 0; 
+        }
+        #article-content:empty:before {
+            content: '开始写作...';
+            color: var(--text-muted);
+            opacity: 0.6;
+        }
+
+        #article-editor .toastui-editor-defaultUI {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        #article-editor .toastui-editor-defaultUI-toolbar {
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-surface);
+        }
+        #article-editor .toastui-editor-defaultUI .toastui-editor-md-container,
+        #article-editor .toastui-editor-defaultUI .toastui-editor-ww-container,
+        #article-editor .toastui-editor-defaultUI .toastui-editor-preview {
+            background: var(--bg-surface);
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen relative selection:bg-[var(--accent)] selection:text-white text-[var(--text-main)] overflow-x-hidden bg-[var(--bg-gradient)]" style="background: var(--bg-gradient) !important;" data-version="1.2">
+
+    <!-- Dynamic Styles -->
+    <style id="theme-style"></style>
+
+    <!-- Canvas Background -->
+    <canvas id="bg-canvas" class="fixed inset-0 w-full h-full z-0 pointer-events-none"></canvas>
+
+    <!-- Reading Progress -->
+    <div class="fixed top-0 left-0 h-1 z-[60] bg-[var(--accent)] shadow-[0_0_15px_var(--accent)]" id="progress-bar"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 nav-glass transition-all duration-500">
+        <div class="max-w-5xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3 cursor-pointer group" onclick="router.navigate('home')">
+                <div id="brand-badge" class="w-8 h-8 rounded-lg bg-[var(--accent)] text-white flex items-center justify-center font-bold shadow-lg shadow-[var(--accent)]/30 group-hover:scale-110 transition-transform duration-300 text-[10px] leading-[1] text-center px-1 overflow-hidden break-words">
+                    User
+                </div>
+                <span id="brand-title" class="font-bold text-lg tracking-tight text-[var(--text-main)] group-hover:text-[var(--accent)] transition-colors">User journal</span>
+            </div>
+
+            <!-- Desktop Nav -->
+            <div class="hidden md:flex items-center space-x-1 p-1 rounded-full border border-[var(--border)] bg-[var(--bg-surface)]/50 backdrop-blur-md">
+                <button onclick="router.navigate('home')" class="px-4 py-2 rounded-full text-sm font-medium hover:bg-[var(--bg-surface-hover)] hover:text-[var(--accent)] transition-all">Home</button>
+                <button onclick="router.navigate('dashboard')" class="px-4 py-2 rounded-full text-sm font-medium hover:bg-[var(--bg-surface-hover)] hover:text-[var(--accent)] transition-all">Dashboard</button>
+                <button onclick="router.navigate('articles')" class="px-4 py-2 rounded-full text-sm font-medium hover:bg-[var(--bg-surface-hover)] hover:text-[var(--accent)] transition-all">Articles</button>
+                <button onclick="router.navigate('life')" class="px-4 py-2 rounded-full text-sm font-medium hover:bg-[var(--bg-surface-hover)] hover:text-[var(--accent)] transition-all">Life</button>
+                <button onclick="router.navigate('gratitude')" class="px-4 py-2 rounded-full text-sm font-medium hover:bg-[var(--bg-surface-hover)] hover:text-[var(--accent)] transition-all">Gratitude</button>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="ui.toggleThemeDrawer()" class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-[var(--bg-surface-hover)] text-[var(--text-muted)] hover:text-[var(--accent)] transition-all border border-transparent hover:border-[var(--border)]">
+                    <i data-lucide="sparkles" class="w-5 h-5"></i>
+                </button>
+                <!-- Auth Button -->
+                <button id="auth-btn" onclick="actions.showAuthModal()" class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-[var(--bg-surface-hover)] text-[var(--text-muted)] hover:text-[var(--accent)] transition-all border border-transparent hover:border-[var(--border)]">
+                    <i data-lucide="log-in" class="w-5 h-5"></i>
+                </button>
+                <!-- Mobile Toggle -->
+                <button class="md:hidden text-[var(--text-main)] p-2" onclick="ui.toggleMobileMenu()">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden absolute top-20 left-0 w-full glass-panel border-t border-[var(--border)] p-6 flex flex-col space-y-6 shadow-2xl">
+            <div class="flex flex-col space-y-4">
+                <button onclick="router.navigate('home')" class="text-xl font-medium text-[var(--text-main)]">Home</button>
+                <button onclick="router.navigate('dashboard')" class="text-xl font-medium text-[var(--text-main)]">Dashboard</button>
+                <button onclick="router.navigate('articles')" class="text-xl font-medium text-[var(--text-main)]">Articles</button>
+                <button onclick="router.navigate('life')" class="text-xl font-medium text-[var(--text-main)]">Life</button>
+                <button onclick="router.navigate('gratitude')" class="text-xl font-medium text-[var(--text-main)]">Gratitude</button>
+            </div>
+            <div class="pt-6 border-t border-[var(--border)] flex justify-between items-center">
+                <span class="text-sm font-semibold uppercase tracking-wider text-[var(--text-muted)]">Appearance</span>
+                <button onclick="ui.toggleThemeDrawer()" class="flex items-center gap-2 text-[var(--text-main)] bg-[var(--bg-surface)] px-4 py-2 rounded-lg border border-[var(--border)]">
+                    <i data-lucide="palette" class="w-4 h-4"></i> Customize
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="app" class="pt-32 pb-24 px-6 max-w-5xl mx-auto min-h-screen relative z-10 transition-all duration-500">
+        <!-- Content Injected Here -->
+    </main>
+
+    <!-- Theme Drawer -->
+    <div id="theme-drawer" class="fixed inset-y-0 right-0 w-full max-w-xs bg-[var(--bg-secondary)]/95 backdrop-blur-2xl shadow-2xl transform translate-x-full transition-transform duration-500 z-[70] border-l border-[var(--border)]">
+        <div class="p-6 h-full flex flex-col">
+            <div class="flex justify-between items-center mb-10">
+                <h3 class="font-bold text-xl text-[var(--text-main)] tracking-tight">Experience</h3>
+                <button onclick="ui.toggleThemeDrawer()" class="text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-surface-hover)] p-2 rounded-full transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <div class="space-y-8 flex-1 overflow-y-auto">
+                <div>
+                    <p class="text-xs uppercase tracking-widest text-[var(--text-muted)] mb-4 font-bold opacity-70">Atmosphere</p>
+                    <div class="grid grid-cols-1 gap-4">
+                        <button onclick="themeManager.apply('fresh')" class="group relative overflow-hidden rounded-xl border border-gray-200 hover:border-blue-400 transition-all h-20">
+                            <div class="absolute inset-0 bg-gradient-to-r from-blue-50 to-white transition-opacity"></div>
+                            <div class="absolute inset-0 flex items-center px-4 gap-4">
+                                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 shadow-sm"><i data-lucide="cloud-snow" class="w-5 h-5"></i></div>
+                                <div class="text-left">
+                                    <div class="text-sm font-bold text-gray-800">Fresh Snow</div>
+                                    <div class="text-xs text-gray-500">Crisp, airy &amp; light</div>
+                                </div>
+                            </div>
+                        </button>
+
+                        <button onclick="themeManager.apply('dark')" class="group relative overflow-hidden rounded-xl border border-slate-700 hover:border-indigo-400 transition-all h-20 bg-slate-900">
+                            <div class="absolute inset-0 bg-gradient-to-r from-slate-900 to-slate-800"></div>
+                            <div class="absolute inset-0 flex items-center px-4 gap-4">
+                                <div class="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 shadow-sm"><i data-lucide="stars" class="w-5 h-5"></i></div>
+                                <div class="text-left">
+                                    <div class="text-sm font-bold text-white">Deep Cosmos</div>
+                                    <div class="text-xs text-slate-400">Connected &amp; infinite</div>
+                                </div>
+                            </div>
+                        </button>
+
+                        <button onclick="themeManager.apply('warm')" class="group relative overflow-hidden rounded-xl border border-orange-200 hover:border-orange-400 transition-all h-20 bg-orange-50">
+                            <div class="absolute inset-0 bg-gradient-to-r from-orange-50 to-amber-50"></div>
+                            <div class="absolute inset-0 flex items-center px-4 gap-4">
+                                <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 shadow-sm"><i data-lucide="sun" class="w-5 h-5"></i></div>
+                                <div class="text-left">
+                                    <div class="text-sm font-bold text-gray-800">Golden Hour</div>
+                                    <div class="text-xs text-gray-500">Warm bokeh &amp; glow</div>
+                                </div>
+                            </div>
+                        </button>
+
+                        <button onclick="themeManager.apply('forest')" class="group relative overflow-hidden rounded-xl border border-emerald-800 hover:border-emerald-400 transition-all h-20 bg-emerald-950">
+                            <div class="absolute inset-0 bg-gradient-to-r from-emerald-950 to-teal-900"></div>
+                            <div class="absolute inset-0 flex items-center px-4 gap-4">
+                                <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-sm"><i data-lucide="leaf" class="w-5 h-5"></i></div>
+                                <div class="text-left">
+                                    <div class="text-sm font-bold text-emerald-100">Mystic Forest</div>
+                                    <div class="text-xs text-emerald-400/70">Organic &amp; floating</div>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center text-xs text-[var(--text-muted)] mt-6 pt-6 border-t border-[var(--border)]">
+                Designed with precision.
+            </div>
+        </div>
+    </div>
+
+    <div id="drawer-overlay" onclick="ui.toggleThemeDrawer()" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[65] hidden opacity-0 transition-opacity duration-500"></div>
+
+    <!-- Modal Container -->
+    <div id="modal-root" class="fixed inset-0 z-[80] hidden items-center justify-center bg-black/50 backdrop-blur-sm"></div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[90] flex flex-col gap-2"></div>
+
+    <script>
+        const __escapeForHtml = (v) => (v ?? '').toString()
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+
+        const __showFatalError = (err) => {
+            try {
+                const app = document.getElementById('app');
+                const message = (err && (err.stack || err.message)) ? (err.stack || err.message) : String(err || 'Unknown error');
+                if (!app) return;
+                if (app.dataset && app.dataset.fatalShown === '1') return;
+                if (app.dataset) app.dataset.fatalShown = '1';
+                app.innerHTML = `
+                    <div class="max-w-3xl mx-auto">
+                        <div class="glass-panel p-6 rounded-2xl border border-red-300">
+                            <div class="text-lg font-bold text-red-600 mb-2">页面脚本运行失败</div>
+                            <div class="text-sm text-[var(--text-muted)] mb-4">请打开浏览器开发者工具 Console 查看详细错误信息（并把错误贴给我）。</div>
+                            <pre class="text-xs whitespace-pre-wrap break-words bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl p-4 overflow-auto">${__escapeForHtml(message)}</pre>
+                        </div>
+                    </div>
+                `;
+            } catch (e) {
+                // noop
+            }
+        };
+
+        window.addEventListener('error', (e) => {
+            try { console.error(e?.error || e?.message || e); } catch (_) {}
+            __showFatalError(e?.error || e?.message || e);
+        });
+
+        window.addEventListener('unhandledrejection', (e) => {
+            try { console.error(e?.reason || e); } catch (_) {}
+            __showFatalError(e?.reason || e);
+        });
+
+        // --- 0. Supabase Configuration ---
+        const SUPABASE_URL = 'https://rnebkdrmwqgcpewdttmv.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJuZWJrZHJtd3FnY3Bld2R0dG12Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NDIwNzYsImV4cCI6MjA4MTQxODA3Nn0.5bKtLwQ4a5cq3UtHKYoNOzM21KtWaHarVrl8oDp6Iys';
+        
+        // Check if Supabase is loaded
+        let supabaseClient = null;
+        if (window.supabase && window.supabase.createClient) {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } else {
+            console.warn('Supabase SDK not loaded, cloud features will be disabled');
+        }
+
+        // Auth State
+        let currentUser = null;
+        let currentAccessToken = null;
+
+        const api = {
+            request: async (path, opts = {}) => {
+                const method = (opts.method || 'GET').toUpperCase();
+                const authRequired = !!opts.auth;
+                const headers = { 'content-type': 'application/json' };
+                if (authRequired) {
+                    if (!currentAccessToken) throw new Error('未登录或登录已失效');
+                    headers['Authorization'] = `Bearer ${currentAccessToken}`;
+                }
+                const res = await fetch(`/.netlify/functions${path}`, {
+                    method,
+                    headers,
+                    body: (opts.body !== undefined && opts.body !== null) ? JSON.stringify(opts.body) : undefined
+                });
+                const json = await res.json().catch(() => null);
+                if (!res.ok) {
+                    const msg = json?.error || `请求失败 (${res.status})`;
+                    throw new Error(msg);
+                }
+                return json?.data;
+            }
+        };
+
+        const viewState = {
+            articleVisibility: 'private',
+            lifeVisibility: 'private'
+        };
+
+        const profileStore = {
+            _key: (userId) => `profile_${userId}`,
+            get: (userId) => {
+                if (!userId) return null;
+                try {
+                    return JSON.parse(localStorage.getItem(profileStore._key(userId)) || 'null');
+                } catch {
+                    return null;
+                }
+            },
+            set: (userId, profile) => {
+                if (!userId) return;
+                localStorage.setItem(profileStore._key(userId), JSON.stringify(profile || {}));
+            }
+        };
+
+        const habitStore = {
+            _key: () => {
+                const uid = currentUser?.id || 'guest';
+                return `habit_settings:${uid}`;
+            },
+            _get: () => {
+                try {
+                    return JSON.parse(localStorage.getItem(habitStore._key()) || 'null');
+                } catch (e) {
+                    return null;
+                }
+            },
+            _save: (obj) => {
+                try {
+                    localStorage.setItem(habitStore._key(), JSON.stringify(obj));
+                } catch (e) {
+                    // noop
+                }
+            },
+            getSettings: () => {
+                const prev = habitStore._get() || {};
+                return {
+                    enabled: !!prev.enabled,
+                    time: (prev.time || '21:30').toString(),
+                    channel: (prev.channel || 'toast').toString(),
+                    last_prompt_date: prev.last_prompt_date || null
+                };
+            },
+            setSettings: (next) => {
+                const prev = habitStore.getSettings();
+                habitStore._save({ ...prev, ...next });
+            },
+            _dateKey: (d = new Date()) => {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${day}`;
+            },
+            _weekKey: (d = new Date()) => {
+                const dt = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+                const day = (dt.getDay() + 6) % 7; // Monday=0
+                dt.setDate(dt.getDate() - day);
+                return habitStore._dateKey(dt);
+            },
+            _monthKey: (d = new Date()) => {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                return `${y}-${m}`;
+            },
+            _allArticlesForStats: () => {
+                const local = (() => {
+                    try { return articlesStore._getLocal ? articlesStore._getLocal() : []; } catch (e) { return []; }
+                })();
+                const cloudPrivate = Array.isArray(articlesStore._cache) ? articlesStore._cache : [];
+                const cloudPublic = Array.isArray(articlesStore._cachePublic) ? articlesStore._cachePublic : [];
+                return uniqueBy([...(local || []), ...(cloudPrivate || []), ...(cloudPublic || [])], articlesStore.fingerprint);
+            },
+            _todayDone: () => {
+                if (!currentUser) return false;
+                const today = habitStore._dateKey(new Date());
+                const gratitude = gratitudeStore.getAll();
+                const wroteGratitude = (gratitude || []).some(i => habitStore._dateKey(new Date(i.date || i.created_at || i.updated_at || Date.now())) === today);
+                const articles = habitStore._allArticlesForStats();
+                const wroteArticle = (articles || []).some(a => habitStore._dateKey(new Date(a.created_at || a.date || Date.now())) === today);
+                return wroteGratitude || wroteArticle;
+            },
+            streakDays: () => {
+                if (!currentUser) return 0;
+                const gratitude = gratitudeStore.getAll();
+                const articles = habitStore._allArticlesForStats();
+                const doneSet = new Set();
+                for (const i of (gratitude || [])) {
+                    const k = habitStore._dateKey(new Date(i.date || Date.now()));
+                    doneSet.add(k);
+                }
+                for (const a of (articles || [])) {
+                    const k = habitStore._dateKey(new Date(a.created_at || a.date || Date.now()));
+                    doneSet.add(k);
+                }
+                let streak = 0;
+                const cursor = new Date();
+                for (let n = 0; n < 3660; n++) {
+                    const k = habitStore._dateKey(cursor);
+                    if (!doneSet.has(k)) break;
+                    streak++;
+                    cursor.setDate(cursor.getDate() - 1);
+                }
+                return streak;
+            },
+            weeklyReport: () => {
+                const startKey = habitStore._weekKey(new Date());
+                const start = new Date(startKey + 'T00:00:00');
+                const end = new Date(start);
+                end.setDate(end.getDate() + 7);
+
+                const inRange = (ts) => {
+                    const d = new Date(ts || Date.now());
+                    return d >= start && d < end;
+                };
+
+                const gratitude = (gratitudeStore.getAll() || []).filter(i => inRange(i.date));
+                const articles = (habitStore._allArticlesForStats() || []).filter(a => inRange(a.created_at || a.date));
+
+                return {
+                    from: startKey,
+                    to: habitStore._dateKey(new Date(end.getTime() - 1)),
+                    gratitudeCount: gratitude.length,
+                    articleCount: articles.length
+                };
+            },
+            monthlyReport: () => {
+                const now = new Date();
+                const mk = habitStore._monthKey(now);
+
+                const inMonth = (ts) => {
+                    const d = new Date(ts || Date.now());
+                    return habitStore._monthKey(d) === mk;
+                };
+
+                const gratitude = (gratitudeStore.getAll() || []).filter(i => inMonth(i.date));
+                const articles = (habitStore._allArticlesForStats() || []).filter(a => inMonth(a.created_at || a.date));
+                const publicCount = (articles || []).filter(a => a?.is_public === true).length;
+                const categoryCounts = {};
+                for (const a of (articles || [])) {
+                    const c = (a.category || 'General').toString();
+                    categoryCounts[c] = (categoryCounts[c] || 0) + 1;
+                }
+                let topCategory = null;
+                let topCategoryCount = 0;
+                for (const k in categoryCounts) {
+                    if (categoryCounts[k] > topCategoryCount) {
+                        topCategory = k;
+                        topCategoryCount = categoryCounts[k];
+                    }
+                }
+
+                const moods = (gratitude || []).map(i => i?.mood).filter(v => typeof v === 'number');
+                const moodAvg = moods.length ? (moods.reduce((a, b) => a + b, 0) / moods.length) : null;
+
+                return {
+                    month: mk,
+                    gratitudeCount: gratitude.length,
+                    articleCount: articles.length,
+                    publicCount,
+                    publicRatio: articles.length ? (publicCount / articles.length) : 0,
+                    topCategory,
+                    topCategoryCount,
+                    moodAvg
+                };
+            },
+            moodTrend: (days = 14) => {
+                const list = gratitudeStore.getAll() || [];
+                const byDay = {};
+                for (const i of list) {
+                    if (typeof i?.mood !== 'number') continue;
+                    const k = habitStore._dateKey(new Date(i.date || Date.now()));
+                    if (!byDay[k]) byDay[k] = [];
+                    byDay[k].push(i.mood);
+                }
+
+                const out = [];
+                const cursor = new Date();
+                for (let i = 0; i < days; i++) {
+                    const k = habitStore._dateKey(cursor);
+                    const arr = byDay[k] || [];
+                    const avg = arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length) : null;
+                    out.unshift({ date: k, value: avg });
+                    cursor.setDate(cursor.getDate() - 1);
+                }
+                return out;
+            },
+            shouldPromptNow: () => {
+                if (!currentUser) return false;
+                const s = habitStore.getSettings();
+                if (!s.enabled) return false;
+                if (habitStore._todayDone()) return false;
+                const today = habitStore._dateKey(new Date());
+                if (s.last_prompt_date === today) return false;
+
+                const parts = (s.time || '21:30').split(':');
+                const hh = parseInt(parts[0] || '21', 10);
+                const mm = parseInt(parts[1] || '30', 10);
+                const now = new Date();
+                const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hh, mm, 0, 0);
+                const diff = now.getTime() - target.getTime();
+                return diff >= 0 && diff < 60 * 60 * 1000;
+            },
+            prompt: async () => {
+                const s = habitStore.getSettings();
+                const today = habitStore._dateKey(new Date());
+                habitStore.setSettings({ last_prompt_date: today });
+                ui.toast('今天还没写感想，去打卡一下吧～', 'info');
+                if (s.channel === 'notification' && 'Notification' in window) {
+                    if (Notification.permission === 'default') {
+                        try { await Notification.requestPermission(); } catch (e) {}
+                    }
+                    if (Notification.permission === 'granted') {
+                        try {
+                            const n = new Notification('写感想提醒', { body: '今天还没写感想，去打卡一下吧～' });
+                            setTimeout(() => { try { n.close(); } catch (e) {} }, 5000);
+                        } catch (e) {}
+                    }
+                }
+            }
+        };
+
+        const markdown = {
+            render: (source) => {
+                const input = source || '';
+                try {
+                    if (typeof marked !== 'undefined' && marked?.setOptions) {
+                        marked.setOptions({ gfm: true, breaks: true, headerIds: false, mangle: false });
+                    }
+                    const html = (typeof marked !== 'undefined' && marked?.parse) ? marked.parse(input) : escapeHtml(input);
+                    const safe = (typeof DOMPurify !== 'undefined' && DOMPurify?.sanitize)
+                        ? DOMPurify.sanitize(html, { USE_PROFILES: { html: true } })
+                        : html;
+                    return safe;
+                } catch (e) {
+                    console.error(e);
+                    return escapeHtml(input);
+                }
+            },
+            renderContent: (source) => {
+                const input = source || '';
+                const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(String(input));
+                if (looksLikeHtml && typeof DOMPurify !== 'undefined' && DOMPurify?.sanitize) {
+                    return DOMPurify.sanitize(String(input), { USE_PROFILES: { html: true } });
+                }
+                return markdown.render(input);
+            },
+            toMarkdown: (source) => {
+                const input = source || '';
+                const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(String(input));
+                if (!looksLikeHtml) return String(input);
+                try {
+                    if (typeof TurndownService === 'undefined') return String(input);
+                    const service = new TurndownService({ codeBlockStyle: 'fenced', emDelimiter: '*', headingStyle: 'atx' });
+                    return service.turndown(String(input));
+                } catch (e) {
+                    console.error(e);
+                    return String(input);
+                }
+            },
+            applyHighlight: (rootEl) => {
+                try {
+                    if (!rootEl || typeof hljs === 'undefined' || !hljs?.highlightElement) return;
+                    rootEl.querySelectorAll('pre code').forEach((el) => {
+                        try { hljs.highlightElement(el); } catch (e) { /* noop */ }
+                    });
+                } catch (e) {
+                    console.error(e);
+                }
+            },
+            previewText: (source, maxLen = 100) => {
+                const s = String(source || '');
+                const noFences = s.replace(/```[\s\S]*?```/g, ' ');
+                const noInlineCode = noFences.replace(/`[^`]*`/g, ' ');
+                const noImages = noInlineCode.replace(/!\[[^\]]*\]\([^\)]*\)/g, ' ');
+                const noLinks = noImages.replace(/\[([^\]]+)\]\([^\)]*\)/g, '$1');
+                const noMd = noLinks
+                    .replace(/(^|\s)#{1,6}\s+/g, ' ')
+                    .replace(/^>\s+/gm, ' ')
+                    .replace(/\*\*([^*]+)\*\*/g, '$1')
+                    .replace(/\*([^*]+)\*/g, '$1')
+                    .replace(/_([^_]+)_/g, '$1');
+                const noHtml = noMd.replace(/<[^>]+>/g, ' ');
+                const compact = noHtml.replace(/\s+/g, ' ').trim();
+                if (!compact) return '';
+                return compact.length > maxLen ? (compact.slice(0, maxLen) + '...') : compact;
+            }
+        };
+
+        const getActiveProfile = () => {
+            const fallbackName = data?.user?.name || 'User';
+            if (!currentUser) {
+                return {
+                    name: fallbackName,
+                    avatar: `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(fallbackName)}&backgroundColor=transparent`
+                };
+            }
+            const localProfile = profileStore.get(currentUser.id) || {};
+            const metaName = currentUser.user_metadata?.display_name;
+            const emailName = (currentUser.email || '').split('@')[0];
+            const name = (localProfile.name || metaName || emailName || fallbackName).toString().trim();
+            const avatar = localProfile.avatar || `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(name)}&backgroundColor=transparent`;
+            return { name, avatar };
+        };
+
+        const updateBrandUI = () => {
+            const badge = document.getElementById('brand-badge');
+            const title = document.getElementById('brand-title');
+            if (!badge && !title) return;
+
+            const profile = getActiveProfile();
+            const nickname = (profile?.name || 'User').toString().trim() || 'User';
+
+            if (badge) badge.textContent = nickname;
+            if (title) title.textContent = `${nickname} journal`;
+        };
+
+        // Auth Helper
+        const auth = {
+            async init() {
+                if (!supabaseClient) return;
+                try {
+                    const { data: { session } } = await supabaseClient.auth.getSession();
+                    currentUser = session?.user || null;
+                    currentAccessToken = session?.access_token || null;
+                    this.updateUI();
+
+                    if (currentUser) {
+                        await articlesStore.fetchFromCloud();
+                        await lifeStore.fetchFromCloud();
+                        router.render();
+                    } else {
+                        viewState.articleVisibility = 'public';
+                        viewState.lifeVisibility = 'public';
+                        await articlesStore.fetchPublicFromCloud();
+                        await lifeStore.fetchPublicFromCloud();
+                        router.render();
+                    }
+                } catch (error) {
+                    console.error('Auth init error:', error);
+                }
+                
+                if (supabaseClient) {
+                    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+                        currentUser = session?.user || null;
+                        currentAccessToken = session?.access_token || null;
+                        this.updateUI();
+                        if (event === 'SIGNED_IN') {
+                            ui.toast('登录成功！正在加载数据...');
+                            ui.closeModal();
+                            // Fetch cloud data
+                            await articlesStore.fetchFromCloud();
+                            await lifeStore.fetchFromCloud();
+                            router.render();
+                        } else if (event === 'SIGNED_OUT') {
+                            ui.toast('已退出登录');
+                            articlesStore._cache = null;
+                            lifeStore._cache = null;
+                            articlesStore._cachePublic = null;
+                            lifeStore._cachePublic = null;
+                            viewState.articleVisibility = 'public';
+                            viewState.lifeVisibility = 'public';
+                            await articlesStore.fetchPublicFromCloud();
+                            await lifeStore.fetchPublicFromCloud();
+                            router.render();
+                        }
+                    });
+                }
+            },
+            
+            updateUI() {
+                const authBtn = document.getElementById('auth-btn');
+                const authBtnMobile = document.getElementById('auth-btn-mobile');
+                if (authBtn) {
+                    if (currentUser) {
+                        const profile = getActiveProfile();
+                        authBtn.innerHTML = `<img src="${profile.avatar}" alt="avatar" class="w-7 h-7 rounded-full object-cover">`;
+                        authBtn.onclick = () => actions.showUserMenu();
+                    } else {
+                        authBtn.innerHTML = `<i data-lucide="log-in" class="w-5 h-5"></i>`;
+                        authBtn.onclick = () => actions.showAuthModal();
+                    }
+                    lucide.createIcons();
+                }
+                if (authBtnMobile) {
+                    authBtnMobile.textContent = currentUser ? '个人中心' : '登录/注册';
+                    authBtnMobile.onclick = currentUser ? () => actions.showUserMenu() : () => actions.showAuthModal();
+                }
+
+                updateBrandUI();
+            },
+            
+            async signUp(email, password) {
+                if (!supabaseClient) throw new Error('云端功能未启用');
+                const { data, error } = await supabaseClient.auth.signUp({ email, password });
+                if (error) throw error;
+                return data;
+            },
+            
+            async signIn(email, password) {
+                if (!supabaseClient) throw new Error('云端功能未启用');
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                return data;
+            },
+            
+            async signOut() {
+                if (!supabaseClient) throw new Error('云端功能未启用');
+                const { error } = await supabaseClient.auth.signOut();
+                if (error) throw error;
+            },
+            
+            getUser() {
+                return currentUser;
+            }
+        };
+
+        // --- 1. Immersive Particle System ---
+        class ParticleSystem {
+            constructor() {
+                this.canvas = document.getElementById('bg-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.theme = 'fresh';
+                this.animationFrame = null;
+                this.mouse = { x: -1000, y: -1000 };
+
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+                window.addEventListener('mousemove', (e) => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                });
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth * window.devicePixelRatio;
+                this.canvas.height = window.innerHeight * window.devicePixelRatio;
+                this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+                this.width = window.innerWidth;
+                this.height = window.innerHeight;
+            }
+
+            setTheme(theme) {
+                this.theme = theme;
+                this.particles = [];
+                this.initParticles();
+            }
+
+            initParticles() {
+                const area = this.width * this.height;
+                let count = 0;
+
+                if (this.theme === 'fresh') count = Math.floor(area / 10000); // Snow
+                else if (this.theme === 'dark') count = Math.floor(area / 9000); // Stars
+                else if (this.theme === 'warm') count = 15; // Large Bokeh
+                else if (this.theme === 'forest') count = Math.floor(area / 12000); // Bubbles
+
+                for (let i = 0; i < count; i++) {
+                    this.particles.push(this.createParticle());
+                }
+            }
+
+            createParticle() {
+                const w = this.width;
+                const h = this.height;
+
+                switch(this.theme) {
+                    case 'dark': // Network Stars
+                        return {
+                            x: Math.random() * w,
+                            y: Math.random() * h,
+                            r: Math.random() * 2 + 0.5,
+                            vx: (Math.random() - 0.5) * 0.3,
+                            vy: (Math.random() - 0.5) * 0.3,
+                            alpha: Math.random() * 0.5 + 0.5
+                        };
+                    case 'fresh': // Drifting Snow
+                        return {
+                            x: Math.random() * w,
+                            y: Math.random() * h,
+                            r: Math.random() * 3 + 1,
+                            vy: Math.random() * 1.5 + 0.5,
+                            vx: Math.random() * 0.5 - 0.25,
+                            sway: Math.random() * 0.02
+                        };
+                    case 'warm': // Bokeh Orbs
+                        return {
+                            x: Math.random() * w,
+                            y: Math.random() * h,
+                            r: Math.random() * 100 + 50,
+                            vx: (Math.random() - 0.5) * 0.5,
+                            vy: (Math.random() - 0.5) * 0.5,
+                            color: Math.random() > 0.5 ? '249, 115, 22' : '234, 179, 8', // Orange/Amber
+                            alpha: Math.random() * 0.3 + 0.1
+                        };
+                    case 'forest': // Rising Spirits
+                        return {
+                            x: Math.random() * w,
+                            y: h + Math.random() * 100,
+                            r: Math.random() * 4 + 1,
+                            vy: Math.random() * 1 + 0.2,
+                            oscillation: Math.random() * 2,
+                            opacity: Math.random() * 0.5 + 0.2
+                        };
+                    default: return {};
+                }
+            }
+
+            updateAndDraw() {
+                this.ctx.clearRect(0, 0, this.width, this.height);
+
+                // Draw Connections for Dark Theme first (background layer)
+                if (this.theme === 'dark') {
+                    this.ctx.lineWidth = 1;
+                    this.ctx.shadowBlur = 8;
+                    this.ctx.shadowColor = 'rgba(129, 140, 248, 0.5)';
+
+                    for (let i = 0; i < this.particles.length; i++) {
+                        const p = this.particles[i];
+
+                        // Connect to mouse
+                        const dx = this.mouse.x - p.x;
+                        const dy = this.mouse.y - p.y;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        if (dist < 150) {
+                            this.ctx.beginPath();
+                            this.ctx.strokeStyle = `rgba(129, 140, 248, ${1 - dist/150 * 0.5})`;
+                            this.ctx.moveTo(p.x, p.y);
+                            this.ctx.lineTo(this.mouse.x, this.mouse.y);
+                            this.ctx.stroke();
+                        }
+
+                        // Connect to neighbors
+                        for (let j = i + 1; j < this.particles.length; j++) {
+                            const p2 = this.particles[j];
+                            const d2x = p.x - p2.x;
+                            const d2y = p.y - p2.y;
+                            const dist2 = Math.sqrt(d2x*d2x + d2y*d2y);
+
+                            if (dist2 < 100) {
+                                this.ctx.beginPath();
+                                this.ctx.strokeStyle = `rgba(148, 163, 184, ${0.4 * (1 - dist2/100)})`;
+                                this.ctx.moveTo(p.x, p.y);
+                                this.ctx.lineTo(p2.x, p2.y);
+                                this.ctx.stroke();
+                            }
+                        }
+                    }
+                }
+
+                this.particles.forEach(p => {
+                    this.ctx.beginPath();
+
+                    if (this.theme === 'dark') {
+                        p.x += p.vx;
+                        p.y += p.vy;
+
+                        // Bounce off edges
+                        if(p.x < 0 || p.x > this.width) p.vx *= -1;
+                        if(p.y < 0 || p.y > this.height) p.vy *= -1;
+
+                        this.ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha})`;
+                        this.ctx.shadowBlur = 4;
+                        this.ctx.shadowColor = "white";
+                        this.ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                        this.ctx.fill();
+                        this.ctx.shadowBlur = 0;
+                    }
+                    else if (this.theme === 'fresh') {
+                        // Mouse repulsion
+                        const dx = p.x - this.mouse.x;
+                        const dy = p.y - this.mouse.y;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        if (dist < 100) {
+                            const angle = Math.atan2(dy, dx);
+                            p.x += Math.cos(angle) * 2;
+                            p.y += Math.sin(angle) * 2;
+                        }
+
+                        p.y += p.vy;
+                        p.x += p.vx + Math.sin(p.y * 0.01) * 0.5;
+
+                        if (p.y > this.height) { p.y = -5; p.x = Math.random() * this.width; }
+                        if (p.x > this.width) p.x = 0;
+                        if (p.x < 0) p.x = this.width;
+
+                        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                        this.ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                    else if (this.theme === 'warm') {
+                        p.x += p.vx;
+                        p.y += p.vy;
+
+                        if (p.x < -100 || p.x > this.width + 100) p.vx *= -1;
+                        if (p.y < -100 || p.y > this.height + 100) p.vy *= -1;
+
+                        // Soft Bokeh Gradient
+                        const gradient = this.ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
+                        gradient.addColorStop(0, `rgba(${p.color}, ${p.alpha})`);
+                        gradient.addColorStop(1, `rgba(${p.color}, 0)`);
+
+                        this.ctx.fillStyle = gradient;
+                        // Draw a larger rect to cover the soft gradient
+                        this.ctx.fillRect(p.x - p.r, p.y - p.r, p.r * 2, p.r * 2);
+                    }
+                    else if (this.theme === 'forest') {
+                        p.y -= p.vy;
+                        p.x += Math.sin(p.y * 0.02 + p.oscillation) * 0.3;
+
+                        if (p.y < -10) {
+                            p.y = this.height + 10;
+                            p.x = Math.random() * this.width;
+                        }
+
+                        this.ctx.fillStyle = `rgba(167, 243, 208, ${p.opacity})`;
+                        this.ctx.shadowBlur = 5;
+                        this.ctx.shadowColor = "rgba(52, 211, 153, 0.5)";
+                        this.ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                        this.ctx.fill();
+                        this.ctx.shadowBlur = 0;
+                    }
+                });
+
+                this.animationFrame = requestAnimationFrame(() => this.updateAndDraw());
+            }
+
+            start() {
+                if (this.animationFrame) cancelAnimationFrame(this.animationFrame);
+                this.updateAndDraw();
+            }
+        }
+
+        const bgEffect = new ParticleSystem();
+
+        // --- 2. Enhanced Theme Manager ---
+        const themeManager = {
+            presets: {
+                fresh: {
+                                                                                                                        '--bg-gradient': 'radial-gradient(circle at top left, #e5e7eb 0%, #cbd5e1 100%)',
+                    '--bg-surface': 'rgba(255, 255, 255, 0.7)',
+                    '--bg-surface-hover': 'rgba(255, 255, 255, 0.9)',
+                    '--nav-bg': 'rgba(255, 255, 255, 0.6)',
+                    '--card-bg': 'rgba(255, 255, 255, 0.65)',
+                    '--text-main': '#0f172a',
+                    '--text-muted': '#475569',
+                    '--accent': '#0ea5e9',
+                    '--border': 'rgba(14, 165, 233, 0.2)',
+                    '--scrollbar-thumb': '#bae6fd',
+                    '--bg-secondary': '#f8fafc'
+                },
+                dark: {
+                                        '--bg-gradient': '#000000',
+                    '--bg-surface': 'rgba(30, 41, 59, 0.6)',
+                    '--bg-surface-hover': 'rgba(51, 65, 85, 0.8)',
+                    '--nav-bg': 'rgba(15, 23, 42, 0.6)',
+                    '--card-bg': 'rgba(30, 41, 59, 0.5)',
+                    '--text-main': '#f8fafc',
+                    '--text-muted': '#94a3b8',
+                    '--accent': '#818cf8',
+                    '--border': 'rgba(129, 140, 248, 0.25)',
+                    '--scrollbar-thumb': '#334155',
+                    '--bg-secondary': '#0f172a'
+                },
+                warm: {
+                    '--bg-gradient': 'radial-gradient(circle at center, #fffbeb 0%, #fff7ed 50%, #ffedd5 100%)',
+                    '--bg-surface': 'rgba(255, 255, 255, 0.6)',
+                    '--bg-surface-hover': 'rgba(255, 255, 255, 0.8)',
+                    '--nav-bg': 'rgba(255, 251, 235, 0.6)',
+                    '--card-bg': 'rgba(255, 255, 255, 0.6)',
+                    '--text-main': '#431407',
+                    '--text-muted': '#92400e',
+                    '--accent': '#f59e0b',
+                    '--border': 'rgba(245, 158, 11, 0.25)',
+                    '--scrollbar-thumb': '#fde68a',
+                    '--bg-secondary': '#fffbeb'
+                },
+                forest: {
+                    '--bg-gradient': 'radial-gradient(circle at top left, #f0fdf4 0%, #ecfdf5 45%, #e6fffa 100%)',
+                    '--bg-surface': 'rgba(255, 255, 255, 0.65)',
+                    '--bg-surface-hover': 'rgba(255, 255, 255, 0.85)',
+                    '--nav-bg': 'rgba(236, 253, 245, 0.65)',
+                    '--card-bg': 'rgba(255, 255, 255, 0.7)',
+                    '--text-main': '#064e3b',
+                    '--text-muted': '#4b5563',
+                    '--accent': '#10b981',
+                    '--border': 'rgba(16, 185, 129, 0.22)',
+                    '--scrollbar-thumb': '#6ee7b7',
+                    '--bg-secondary': '#f0fdf4'
+                }
+            },
+
+            init() {
+                const savedTheme = localStorage.getItem('theme') || 'dark'; // Default to dark for impact
+                this.apply(savedTheme);
+            },
+
+            apply(themeName) {
+                const theme = this.presets[themeName];
+                if (!theme) return;
+                
+                let css = ':root {';
+                for (const key in theme) {
+                    css += `${key}: ${theme[key]};`;
+                }
+                css += '}';
+                
+                const styleEl = document.getElementById('theme-style');
+                if (styleEl) {
+                    styleEl.innerHTML = css;
+                }
+                localStorage.setItem('theme', themeName);
+
+                if (typeof bgEffect !== 'undefined') {
+                    bgEffect.setTheme(themeName);
+                    bgEffect.start();
+                }
+
+                // Update UI toggle state if needed
+                if (typeof ui !== 'undefined' && ui.closeDrawer) {
+                    ui.closeDrawer();
+                }
+            }
+        };
+
+        // --- 3. Content Data ---
+        const data = {
+            user: { name: "Alex Creator", tagline: "Crafting digital experiences." },
+            articles: [
+                { id: 1, title: "The Aesthetics of Code", date: "Oct 24, 2023", tags: ["Design"], content: "# The Aesthetics of Code\n\nCode is not just logic; it is structure, rhythm, and poetry. When we write clean code, we are designing for the future self.\n\n*   Readability is king.\n*   Consistency is queen.\n\n> \"Good design is obvious. Great design is transparent.\" - Joe Sparano" },
+                { id: 2, title: "Understanding React Server Components", date: "Oct 10, 2023", tags: ["Tech"], content: "# RSC Explained\n\nThe paradigm shift is here..." },
+                { id: 3, title: "Micro-interactions Matter", date: "Sep 28, 2023", tags: ["UX"], content: "# Why Details Matter\n\nThe difference between a good app and a great app..." }
+            ],
+            life: [
+                { img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80", desc: "Seaside calmness" },
+                { img: "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=800&q=80", desc: "Mountain peaks" },
+                { img: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80", desc: "Starry night" },
+                { img: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800&q=80", desc: "Lake reflection" },
+                { img: "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=800&q=80", desc: "Forest walk" },
+                { img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&q=80", desc: "Valley view" }
+            ]
+        };
+
+        const gratitudeStore = {
+            getAll: () => {
+                if (!currentUser) return [];
+                return JSON.parse(localStorage.getItem('gratitude') || '[]');
+            },
+            add: (text, mood = null) => {
+                if (!currentUser) {
+                    ui.toast('请先登录', 'error');
+                    return;
+                }
+                const list = gratitudeStore.getAll();
+                list.unshift({ id: Date.now(), text: (text || '').trim(), date: new Date().toISOString(), completed: false, mood: (typeof mood === 'number' ? mood : null) });
+                localStorage.setItem('gratitude', JSON.stringify(list));
+                router.render();
+            },
+            update: (id, updates) => {
+                if (!currentUser) {
+                    ui.toast('请先登录', 'error');
+                    return;
+                }
+                const list = gratitudeStore.getAll().map(i => i.id === id ? { ...i, ...updates } : i);
+                localStorage.setItem('gratitude', JSON.stringify(list));
+                router.render();
+            },
+            append: (id, extraText) => {
+                if (!currentUser) {
+                    ui.toast('请先登录', 'error');
+                    return;
+                }
+                const extra = (extraText || '').trim();
+                if (!extra) return;
+                const ts = new Date().toLocaleString();
+                const list = gratitudeStore.getAll().map(i => {
+                    if (i.id !== id) return i;
+                    const base = (i.text || '').trim();
+                    const appended = base ? `${base}\n\n[${ts}]\n${extra}` : `[${ts}]\n${extra}`;
+                    return { ...i, text: appended };
+                });
+                localStorage.setItem('gratitude', JSON.stringify(list));
+                router.render();
+            },
+            toggle: (id) => {
+                if (!currentUser) {
+                    ui.toast('请先登录', 'error');
+                    return;
+                }
+                const list = gratitudeStore.getAll().map(i => i.id === id ? {...i, completed: !i.completed} : i);
+                localStorage.setItem('gratitude', JSON.stringify(list));
+                router.render();
+            },
+            delete: (id) => {
+                if (!currentUser) {
+                    ui.toast('请先登录', 'error');
+                    return;
+                }
+                const list = gratitudeStore.getAll().filter(i => i.id !== id);
+                localStorage.setItem('gratitude', JSON.stringify(list));
+                router.render();
+            }
+        };
+
+        // --- Articles Store (Hybrid: Cloud + Local) ---
+        const articlesStore = {
+            _key: 'articles_data',
+            _cache: null,
+            _cachePublic: null,
+            _seedDone: false,
+            
+            isOnline: () => !!currentUser,
+            
+            ensureSeed: () => {
+                if (articlesStore._seedDone) return;
+                articlesStore._seedDone = true;
+                if (!currentUser) return;
+                if (!localStorage.getItem(articlesStore._key)) {
+                    const seed = (data.articles || []).map((a, idx) => ({
+                        id: Date.now() + idx,
+                        title: a.title,
+                        category: (a.tags && a.tags[0]) || 'General',
+                        content: a.content || '',
+                        created_at: a.date || new Date().toISOString(),
+                        is_public: false
+                    }));
+                    localStorage.setItem(articlesStore._key, JSON.stringify(seed));
+                }
+            },
+            
+            // Local methods
+            _getLocal: () => JSON.parse(localStorage.getItem(articlesStore._key) || '[]'),
+            _saveLocal: (list) => localStorage.setItem(articlesStore._key, JSON.stringify(list)),
+            
+            // Cloud methods
+            async fetchFromCloud() {
+                const opts = arguments?.[0] || {};
+                const from = Number.isFinite(opts.from) ? opts.from : 0;
+                const limit = Number.isFinite(opts.limit) ? opts.limit : 200;
+                const reset = !!opts.reset;
+
+                if (!currentUser) return [];
+                try {
+                    const data = await api.request(`/articles?mode=private&from=${from}&limit=${limit}`, { auth: true });
+                    const base = reset ? [] : (articlesStore._cache || []);
+                    const merged = [...base, ...(data || [])];
+                    const deduped = uniqueBy(merged, articlesStore.fingerprint);
+                    articlesStore._cache = deduped;
+                    return deduped;
+                } catch (e) {
+                    console.error(e);
+                    return [];
+                }
+            },
+
+            async fetchPublicFromCloud(opts = {}) {
+                const from = Number.isFinite(opts.from) ? opts.from : 0;
+                const limit = Number.isFinite(opts.limit) ? opts.limit : 60;
+                const reset = !!opts.reset;
+                try {
+                    const data = await api.request(`/articles?mode=public&from=${from}&limit=${limit}`);
+                    const base = reset ? [] : (articlesStore._cachePublic || []);
+                    const merged = [...base, ...(data || [])];
+                    const deduped = uniqueBy(merged, articlesStore.fingerprint);
+                    articlesStore._cachePublic = deduped;
+                    return deduped;
+                } catch (e) {
+                    console.error(e);
+                    return [];
+                }
+            },
+
+            fingerprint: (a) => {
+                const ts = normalizeKeyPart(a?.created_at || a?.date);
+                const title = normalizeKeyPart(a?.title);
+                const cat = normalizeKeyPart(a?.category);
+                const content = normalizeKeyPart((a?.content || '').slice(0, 200));
+                return `${ts}|${title}|${cat}|${content}`;
+            },
+            
+            getAll: (mode = viewState.articleVisibility) => {
+                if (mode === 'public') {
+                    if (articlesStore._cachePublic) return articlesStore._cachePublic;
+                    const local = articlesStore._getLocal();
+                    return local.filter(a => a?.is_public === true);
+                }
+
+                if (articlesStore.isOnline() && articlesStore._cache) {
+                    return (articlesStore._cache || []).filter(a => a?.is_public !== true);
+                }
+                const local = articlesStore._getLocal();
+                return local.filter(a => a?.is_public !== true);
+            },
+            
+            getAllSorted: (mode = viewState.articleVisibility) => {
+                const list = uniqueBy(articlesStore.getAll(mode), articlesStore.fingerprint);
+                return [...list].sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date));
+            },
+            
+            getById: (id) => {
+                const fromMode = articlesStore.getAll().find(a => a.id == id);
+                if (fromMode) return fromMode;
+                const fromPublic = (articlesStore._cachePublic || []).find(a => a.id == id);
+                if (fromPublic) return fromPublic;
+                const fromPrivate = (articlesStore._cache || []).find(a => a.id == id);
+                if (fromPrivate) return fromPrivate;
+                const fromLocal = articlesStore._getLocal().find(a => a.id == id);
+                return fromLocal || null;
+            },
+            
+            async add(item) {
+                if (!currentUser) {
+                    ui.toast('请先登录', 'error');
+                    return;
+                }
+                try {
+                    await api.request('/articles', {
+                        method: 'POST',
+                        auth: true,
+                        body: {
+                            title: item.title,
+                            category: item.category,
+                            content: item.content,
+                            is_public: !!item.is_public,
+                            fingerprint: articlesStore.fingerprint(item),
+                            created_at: item.created_at || item.date || null
+                        }
+                    });
+                    await articlesStore.fetchFromCloud({ reset: true });
+                    articlesStore._cachePublic = null;
+                    if (viewState.articleVisibility === 'public') {
+                        await articlesStore.fetchPublicFromCloud({ reset: true });
+                    }
+                    ui.toast('文章已保存到云端');
+                } catch (e) {
+                    ui.toast('保存失败: ' + (e?.message || '未知错误'), 'error');
+                }
+                router.render();
+            },
+            
+            async update(id, updates) {
+                if (!currentUser) {
+                    ui.toast('请先登录', 'error');
+                    return;
+                }
+                try {
+                    await api.request(`/articles/${id}`, {
+                        method: 'PUT',
+                        auth: true,
+                        body: { ...updates }
+                    });
+                    await articlesStore.fetchFromCloud({ reset: true });
+                    articlesStore._cachePublic = null;
+                    if (viewState.articleVisibility === 'public') {
+                        await articlesStore.fetchPublicFromCloud({ reset: true });
+                    }
+                    ui.toast('文章已更新');
+                } catch (e) {
+                    ui.toast('更新失败: ' + (e?.message || '未知错误'), 'error');
+                }
+                router.render();
+            },
+            
+            async delete(id) {
+                if (!currentUser) {
+                    ui.toast('请先登录', 'error');
+                    return;
+                }
+                try {
+                    await api.request(`/articles/${id}`, { method: 'DELETE', auth: true });
+                    await articlesStore.fetchFromCloud({ reset: true });
+                    articlesStore._cachePublic = null;
+                    if (viewState.articleVisibility === 'public') {
+                        await articlesStore.fetchPublicFromCloud({ reset: true });
+                    }
+                    ui.toast('文章已删除');
+                } catch (e) {
+                    ui.toast('删除失败: ' + (e?.message || '未知错误'), 'error');
+                }
+                router.render();
+            },
+            
+            categories: (mode = viewState.articleVisibility) => {
+                const cats = articlesStore.getAll(mode).map(a => a.category).filter(Boolean);
+                return [...new Set(cats)];
+            },
+            
+            async syncToCloud() {
+                if (!currentUser) return;
+
+                const localData = articlesStore._getLocal();
+                const cloud = await articlesStore.fetchFromCloud({ reset: true, limit: 5000 });
+                const cloudKeys = new Set((cloud || []).map(articlesStore.fingerprint));
+
+                let changed = false;
+                const nextLocal = (localData || []).map(i => ({ ...i }));
+
+                for (let idx = 0; idx < nextLocal.length; idx++) {
+                    const item = nextLocal[idx];
+                    if (item?.synced_to_cloud) continue;
+
+                    const key = articlesStore.fingerprint(item);
+                    if (cloudKeys.has(key)) {
+                        nextLocal[idx] = { ...item, synced_to_cloud: true };
+                        changed = true;
+                        continue;
+                    }
+
+                    try {
+                        const inserted = await api.request('/articles', {
+                            method: 'POST',
+                            auth: true,
+                            body: {
+                                title: item.title,
+                                category: item.category,
+                                content: item.content,
+                                is_public: !!item.is_public,
+                                fingerprint: key,
+                                created_at: item.created_at || item.date || null
+                            }
+                        });
+                        cloudKeys.add(key);
+                        nextLocal[idx] = { ...item, synced_to_cloud: true, cloud_id: inserted?.id || null };
+                    } catch (e) {
+                        console.error(e);
+                        continue;
+                    }
+                    changed = true;
+                }
+
+                if (changed) articlesStore._saveLocal(nextLocal);
+                await articlesStore.fetchFromCloud({ reset: true, limit: 5000 });
+            }
+        };
+
+        // --- Life Records Store (Hybrid: Cloud + Local) ---
+        const lifeStore = {
+            _key: 'life_records',
+            _cache: null,
+            _cachePublic: null,
+            _seedDone: false,
+            
+            isOnline: () => !!currentUser,
+            
+            ensureSeed: () => {
+                if (lifeStore._seedDone) return;
+                lifeStore._seedDone = true;
+                if (!currentUser) return;
+                if (!localStorage.getItem(lifeStore._key)) {
+                    const seed = (data.life || []).map((item, idx) => ({
+                        id: Date.now() + idx,
+                        images: [item.img],
+                        description: item.desc || '',
+                        created_at: new Date().toISOString(),
+                        is_public: false
+                    }));
+                    localStorage.setItem(lifeStore._key, JSON.stringify(seed));
+                }
+            },
+            
+            _getLocal: () => JSON.parse(localStorage.getItem(lifeStore._key) || '[]'),
+            _saveLocal: (list) => localStorage.setItem(lifeStore._key, JSON.stringify(list)),
+            
+            async fetchFromCloud() {
+                const opts = arguments?.[0] || {};
+                const from = Number.isFinite(opts.from) ? opts.from : 0;
+                const limit = Number.isFinite(opts.limit) ? opts.limit : 240;
+                const reset = !!opts.reset;
+
+                if (!currentUser) return [];
+                try {
+                    const data = await api.request(`/life?mode=private&from=${from}&limit=${limit}`, { auth: true });
+                    const base = reset ? [] : (lifeStore._cache || []);
+                    const merged = [...base, ...(data || [])];
+                    const deduped = uniqueBy(merged, lifeStore.fingerprint);
+                    lifeStore._cache = deduped;
+                    return deduped;
+                } catch (e) {
+                    console.error(e);
+                    return [];
+                }
+            },
+
+            async fetchPublicFromCloud(opts = {}) {
+                const from = Number.isFinite(opts.from) ? opts.from : 0;
+                const limit = Number.isFinite(opts.limit) ? opts.limit : 90;
+                const reset = !!opts.reset;
+                try {
+                    const data = await api.request(`/life?mode=public&from=${from}&limit=${limit}`);
+                    const base = reset ? [] : (lifeStore._cachePublic || []);
+                    const merged = [...base, ...(data || [])];
+                    const deduped = uniqueBy(merged, lifeStore.fingerprint);
+                    lifeStore._cachePublic = deduped;
+                    return deduped;
+                } catch (e) {
+                    console.error(e);
+                    return [];
+                }
+            },
+
+            fingerprint: (r) => {
+                const ts = normalizeKeyPart(r?.created_at || r?.date);
+                const desc = normalizeKeyPart(r?.description || r?.desc);
+                const firstImg = normalizeKeyPart((r?.images && r?.images[0]) || '');
+                return `${ts}|${desc}|${firstImg}`;
+            },
+            
+            getAll: (mode = viewState.lifeVisibility) => {
+                if (mode === 'public') {
+                    if (lifeStore._cachePublic) return lifeStore._cachePublic;
+                    const local = lifeStore._getLocal();
+                    return local.filter(r => r?.is_public === true);
+                }
+
+                if (lifeStore.isOnline() && lifeStore._cache) {
+                    return (lifeStore._cache || []).filter(r => r?.is_public !== true);
+                }
+                const local = lifeStore._getLocal();
+                return local.filter(r => r?.is_public !== true);
+            },
+            
+            getAllSorted: (mode = viewState.lifeVisibility) => {
+                const list = uniqueBy(lifeStore.getAll(mode), lifeStore.fingerprint);
+                return [...list].sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date));
+            },
+            
+            async add(record) {
+                if (!currentUser) {
+                    ui.toast('请先登录', 'error');
+                    return;
+                }
+                try {
+                    await api.request('/life', {
+                        method: 'POST',
+                        auth: true,
+                        body: {
+                            images: record.images,
+                            description: record.desc,
+                            is_public: !!record.is_public,
+                            fingerprint: lifeStore.fingerprint(record),
+                            created_at: record.created_at || record.date || null
+                        }
+                    });
+                    await lifeStore.fetchFromCloud({ reset: true });
+                    lifeStore._cachePublic = null;
+                    if (viewState.lifeVisibility === 'public') {
+                        await lifeStore.fetchPublicFromCloud({ reset: true });
+                    }
+                    ui.toast('生活记录已保存到云端');
+                } catch (e) {
+                    ui.toast('保存失败: ' + (e?.message || '未知错误'), 'error');
+                }
+                router.render();
+            },
+            
+            async delete(id) {
+                if (!currentUser) {
+                    ui.toast('请先登录', 'error');
+                    return;
+                }
+                try {
+                    await api.request(`/life/${id}`, { method: 'DELETE', auth: true });
+                    await lifeStore.fetchFromCloud({ reset: true });
+                    lifeStore._cachePublic = null;
+                    if (viewState.lifeVisibility === 'public') {
+                        await lifeStore.fetchPublicFromCloud({ reset: true });
+                    }
+                    ui.toast('记录已删除');
+                } catch (e) {
+                    ui.toast('删除失败: ' + (e?.message || '未知错误'), 'error');
+                }
+                router.render();
+            },
+            
+            async syncToCloud() {
+                if (!currentUser) return;
+
+                const localData = lifeStore._getLocal();
+                const cloud = await lifeStore.fetchFromCloud({ reset: true, limit: 5000 });
+                const cloudKeys = new Set((cloud || []).map(lifeStore.fingerprint));
+
+                let changed = false;
+                const nextLocal = (localData || []).map(i => ({ ...i }));
+
+                for (let idx = 0; idx < nextLocal.length; idx++) {
+                    const item = nextLocal[idx];
+                    if (item?.synced_to_cloud) continue;
+
+                    const key = lifeStore.fingerprint(item);
+                    if (cloudKeys.has(key)) {
+                        nextLocal[idx] = { ...item, synced_to_cloud: true };
+                        changed = true;
+                        continue;
+                    }
+
+                    try {
+                        const inserted = await api.request('/life', {
+                            method: 'POST',
+                            auth: true,
+                            body: {
+                                images: item.images,
+                                description: item.description || item.desc,
+                                is_public: !!item.is_public,
+                                fingerprint: key,
+                                created_at: item.created_at || item.date || null
+                            }
+                        });
+                        cloudKeys.add(key);
+                        nextLocal[idx] = { ...item, synced_to_cloud: true, cloud_id: inserted?.id || null };
+                    } catch (e) {
+                        console.error(e);
+                        continue;
+                    }
+                    changed = true;
+                }
+
+                if (changed) lifeStore._saveLocal(nextLocal);
+                await lifeStore.fetchFromCloud({ reset: true, limit: 5000 });
+            }
+        };
+
+        // App State
+        const appState = {
+            articleFilter: null,
+            editingArticle: null,
+            profileDraftAvatar: null,
+            articlePageSize: 10,
+            articleVisibleCount: 10,
+            lifePageSize: 18,
+            lifeVisibleCount: 18,
+            articleLoading: false,
+            lifeLoading: false
+        };
+
+        const escapeHtml = (str) => (str ?? '').toString()
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+
+        const normalizeKeyPart = (v) => (v ?? '').toString().trim().replace(/\s+/g, ' ').toLowerCase();
+
+        const uniqueBy = (list, keyFn) => {
+            const seen = new Set();
+            const out = [];
+            for (const item of (list || [])) {
+                const k = keyFn(item);
+                if (!k || seen.has(k)) continue;
+                seen.add(k);
+                out.push(item);
+            }
+            return out;
+        };
+
+        // Rich Text Editor Helper
+        const editor = {
+            format: (command, value = null) => {
+                document.execCommand(command, false, value);
+                document.getElementById('article-content')?.focus();
+            },
+            insertLink: () => {
+                const url = prompt('请输入链接地址:', 'https://');
+                if (url) {
+                    document.execCommand('createLink', false, url);
+                }
+            },
+            insertCode: () => {
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    const code = document.createElement('pre');
+                    code.style.cssText = 'background: var(--bg-surface); padding: 12px; border-radius: 8px; overflow-x: auto; font-family: monospace; font-size: 14px; border: 1px solid var(--border);';
+                    code.appendChild(range.extractContents());
+                    range.insertNode(code);
+                }
+            },
+            handlePaste: (e) => {
+                e.preventDefault();
+                const text = e.clipboardData.getData('text/html') || e.clipboardData.getData('text/plain');
+                document.execCommand('insertHTML', false, text);
+            }
+        };
+
+        // --- 4. Component Renderer ---
+        const components = {
+            Home: () => {
+                const profile = getActiveProfile();
+                return `
+                <div class="flex flex-col items-center justify-center text-center py-20 animate-[fadeIn_0.8s_ease-out]">
+                    <div class="relative group">
+                        <div class="absolute -inset-1 bg-[var(--accent)] rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+                        <img src="${profile.avatar}" class="relative w-32 h-32 rounded-full border-4 border-[var(--card-bg)] shadow-2xl z-10 bg-[var(--bg-secondary)] mb-8 object-cover">
+                    </div>
+
+                    <h1 class="text-5xl md:text-6xl font-bold tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-[var(--text-main)] to-[var(--text-muted)] drop-shadow-sm">${escapeHtml(profile.name)}</h1>
+                    <p class="text-[var(--text-muted)] text-xl max-w-lg leading-relaxed font-light">${data.user.tagline}</p>
+
+                    <div class="mt-12 flex gap-4">
+                        <button onclick="router.navigate('articles')" class="px-8 py-3 rounded-full bg-[var(--text-main)] text-[var(--bg-secondary)] font-semibold hover:opacity-90 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">Read Articles</button>
+                        <button onclick="router.navigate('life')" class="px-8 py-3 rounded-full glass-panel text-[var(--text-main)] font-semibold hover:bg-[var(--bg-surface-hover)] transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">Gallery</button>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8 mt-16 max-w-4xl mx-auto">
+                    ${articlesStore.getAllSorted().slice(0,2).map((post, i) => `
+                        <div class="glass-panel p-8 rounded-2xl cursor-pointer group hover:border-[var(--accent)] transition-all duration-300 relative overflow-hidden" onclick="router.navigate('article', ${post.id})" style="animation: fadeIn 0.5s ease-out ${i*0.1}s forwards; opacity: 0;">
+                            <div class="absolute top-0 right-0 w-24 h-24 bg-[var(--accent)]/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-150"></div>
+                            <span class="text-xs font-bold uppercase tracking-wider text-[var(--accent)] mb-3 block">${post.category || 'General'}</span>
+                            <h3 class="text-2xl font-bold mb-3 group-hover:text-[var(--accent)] transition-colors">${post.title}</h3>
+                            <div class="flex items-center text-sm text-[var(--text-muted)] opacity-80">
+                                <i data-lucide="calendar" class="w-4 h-4 mr-2"></i> ${new Date(post.created_at || post.date).toLocaleDateString()}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            },
+
+            Dashboard: () => {
+                if (!currentUser) {
+                    return `
+                        <div class="max-w-3xl mx-auto animate-[fadeIn_0.5s_ease-out]">
+                            <div class="glass-panel p-10 rounded-3xl shadow-xl text-center">
+                                <div class="w-16 h-16 bg-[var(--accent)]/20 text-[var(--accent)] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                    <i data-lucide="bar-chart-3" class="w-8 h-8"></i>
+                                </div>
+                                <h2 class="text-3xl font-bold tracking-tight mb-2">Dashboard</h2>
+                                <p class="text-[var(--text-muted)] mb-6">登录后才可以查看统计与打卡提醒</p>
+                                <button onclick="actions.requireLogin()" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[var(--accent)] text-white font-medium hover:opacity-90 transition-all shadow-lg shadow-[var(--accent)]/30">
+                                    <i data-lucide="log-in" class="w-4 h-4"></i> 登录/注册
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                const settings = habitStore.getSettings();
+                const todayDone = habitStore._todayDone();
+                const streak = habitStore.streakDays();
+                const week = habitStore.weeklyReport();
+                const month = habitStore.monthlyReport();
+                const trend = habitStore.moodTrend(14);
+
+                const pct = (v) => `${Math.round((v || 0) * 100)}%`;
+                const moodLabel = (v) => {
+                    if (v === null || typeof v !== 'number') return '—';
+                    return v.toFixed(1);
+                };
+
+                return `
+                    <div class="max-w-5xl mx-auto animate-[fadeIn_0.5s_ease-out]">
+                        <div class="flex justify-between items-center mb-8">
+                            <h2 class="text-4xl font-bold tracking-tight flex items-center gap-3">
+                                <i data-lucide="bar-chart-3" class="w-8 h-8 text-[var(--accent)]"></i> Dashboard
+                            </h2>
+                            <button onclick="actions.openHabitSettings()" class="flex items-center gap-2 px-5 py-2.5 bg-[var(--bg-surface)] text-[var(--text-main)] rounded-full font-medium border border-[var(--border)] hover:bg-[var(--bg-surface-hover)] transition-all">
+                                <i data-lucide="bell" class="w-4 h-4"></i> 提醒设置
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="glass-panel p-6 rounded-2xl shadow-lg">
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <div class="text-sm text-[var(--text-muted)]">今日打卡</div>
+                                        <div class="text-2xl font-bold mt-1">${todayDone ? '已完成' : '未完成'}</div>
+                                        <div class="text-xs text-[var(--text-muted)] mt-2">写一条感恩/感想或发布一篇文章即可完成</div>
+                                    </div>
+                                    <div class="w-10 h-10 rounded-xl flex items-center justify-center ${todayDone ? 'bg-green-500/15 text-green-500' : 'bg-[var(--accent)]/15 text-[var(--accent)]'}">
+                                        <i data-lucide="${todayDone ? 'check-circle-2' : 'circle'}" class="w-5 h-5"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-4 flex gap-3">
+                                    <button onclick="router.navigate('gratitude')" class="flex-1 px-4 py-2.5 rounded-xl bg-[var(--accent)] text-white font-medium hover:opacity-90 transition-all">去写感想</button>
+                                    <button onclick="router.navigate('articles')" class="flex-1 px-4 py-2.5 rounded-xl border border-[var(--border)] text-[var(--text-main)] hover:bg-[var(--bg-surface)] transition-colors">去写文章</button>
+                                </div>
+                            </div>
+
+                            <div class="glass-panel p-6 rounded-2xl shadow-lg">
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <div class="text-sm text-[var(--text-muted)]">连续天数</div>
+                                        <div class="text-2xl font-bold mt-1">${streak} 天</div>
+                                        <div class="text-xs text-[var(--text-muted)] mt-2">保持连续更容易形成习惯</div>
+                                    </div>
+                                    <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--accent)]/15 text-[var(--accent)]">
+                                        <i data-lucide="flame" class="w-5 h-5"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-4 grid grid-cols-2 gap-3">
+                                    <div class="p-3 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)]">
+                                        <div class="text-xs text-[var(--text-muted)]">本周</div>
+                                        <div class="text-lg font-semibold">${week.gratitudeCount} 感想</div>
+                                        <div class="text-xs text-[var(--text-muted)]">${week.articleCount} 文章</div>
+                                    </div>
+                                    <div class="p-3 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)]">
+                                        <div class="text-xs text-[var(--text-muted)]">本月</div>
+                                        <div class="text-lg font-semibold">${month.gratitudeCount} 感想</div>
+                                        <div class="text-xs text-[var(--text-muted)]">${month.articleCount} 文章</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="glass-panel p-6 rounded-2xl shadow-lg">
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <div class="text-sm text-[var(--text-muted)]">本月内容</div>
+                                        <div class="text-2xl font-bold mt-1">${month.articleCount} 篇文章</div>
+                                        <div class="text-xs text-[var(--text-muted)] mt-2">公开占比 ${pct(month.publicRatio)} · 常用分类 ${escapeHtml(month.topCategory || '—')}</div>
+                                    </div>
+                                    <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--accent)]/15 text-[var(--accent)]">
+                                        <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-4 p-3 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)]">
+                                    <div class="text-xs text-[var(--text-muted)]">本月平均心情</div>
+                                    <div class="text-lg font-semibold">${moodLabel(month.moodAvg)}</div>
+                                    <div class="text-xs text-[var(--text-muted)]">在“Gratitude”里选择心情后才会统计</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel p-6 rounded-2xl shadow-lg mt-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <div class="text-xl font-bold">心情趋势（近 14 天）</div>
+                                    <div class="text-xs text-[var(--text-muted)]">基于感想记录里的心情评分</div>
+                                </div>
+                                <div class="text-sm text-[var(--text-muted)]">提醒：${settings.enabled ? `已开启 ${settings.time}` : '未开启'}</div>
+                            </div>
+
+                            <div class="grid grid-cols-7 md:grid-cols-14 gap-2 items-end">
+                                ${trend.map(p => {
+                                    const v = (typeof p.value === 'number') ? p.value : 0;
+                                    const h = Math.round((v / 5) * 60);
+                                    const muted = (typeof p.value === 'number') ? '' : 'opacity-30';
+                                    return `
+                                        <div class="flex flex-col items-center gap-1 ${muted}">
+                                            <div class="w-full rounded-lg bg-[var(--bg-surface)] border border-[var(--border)] overflow-hidden" style="height: 70px;">
+                                                <div class="w-full bg-[var(--accent)]" style="height: ${h}px; margin-top: ${70 - h}px;"></div>
+                                            </div>
+                                            <div class="text-[10px] text-[var(--text-muted)] font-mono">${p.date.slice(5)}</div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            Articles: () => {
+                const allArticles = articlesStore.getAllSorted();
+                const categories = articlesStore.categories();
+                const filtered = appState.articleFilter 
+                    ? allArticles.filter(a => a.category === appState.articleFilter) 
+                    : allArticles;
+                const visibleCount = appState.articleVisibleCount || appState.articlePageSize || 10;
+                const visible = filtered.slice(0, visibleCount);
+                const hasMore = visible.length < filtered.length;
+                
+                return `
+                <div class="max-w-3xl mx-auto animate-[fadeIn_0.5s_ease-out]">
+                    <div class="flex justify-between items-center mb-8">
+                        <h2 class="text-4xl font-bold tracking-tight flex items-center gap-3">
+                            <i data-lucide="feather" class="w-8 h-8 text-[var(--accent)]"></i> Thoughts
+                        </h2>
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center p-1 rounded-full border border-[var(--border)] bg-[var(--bg-surface)]/50 backdrop-blur-md">
+                                <button onclick="actions.setArticleVisibility('private')" class="px-4 py-2 rounded-full text-sm font-medium transition-all ${viewState.articleVisibility === 'private' ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-muted)] hover:bg-[var(--bg-surface-hover)] hover:text-[var(--accent)]'}">私密</button>
+                                <button onclick="actions.setArticleVisibility('public')" class="px-4 py-2 rounded-full text-sm font-medium transition-all ${viewState.articleVisibility === 'public' ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-muted)] hover:bg-[var(--bg-surface-hover)] hover:text-[var(--accent)]'}">公开</button>
+                            </div>
+                            ${currentUser ? `
+                                <button onclick="actions.showArticleModal()" class="flex items-center gap-2 px-5 py-2.5 bg-[var(--accent)] text-white rounded-full font-medium hover:opacity-90 transition-all shadow-lg shadow-[var(--accent)]/30">
+                                    <i data-lucide="plus" class="w-4 h-4"></i> 写文章
+                                </button>
+                            ` : `
+                                <button onclick="actions.requireLogin()" class="flex items-center gap-2 px-5 py-2.5 bg-[var(--bg-surface)] text-[var(--text-muted)] rounded-full font-medium border border-[var(--border)] hover:bg-[var(--bg-surface-hover)] transition-all">
+                                    <i data-lucide="log-in" class="w-4 h-4"></i> 登录后写文章
+                                </button>
+                            `}
+                        </div>
+                    </div>
+
+                    ${appState.articleLoading ? `<div class="text-sm text-[var(--text-muted)] mb-6">加载中...</div>` : ''}
+                    
+                    <!-- Category Filter -->
+                    <div class="flex flex-wrap gap-2 mb-8">
+                        <button onclick="actions.filterArticles(null)" class="px-4 py-2 rounded-full text-sm font-medium transition-all ${!appState.articleFilter ? 'bg-[var(--accent)] text-white' : 'bg-[var(--bg-surface)] text-[var(--text-muted)] hover:bg-[var(--bg-surface-hover)] border border-[var(--border)]'}">
+                            全部
+                        </button>
+                        ${categories.map(cat => `
+                            <button onclick="actions.filterArticles('${cat}')" class="px-4 py-2 rounded-full text-sm font-medium transition-all ${appState.articleFilter === cat ? 'bg-[var(--accent)] text-white' : 'bg-[var(--bg-surface)] text-[var(--text-muted)] hover:bg-[var(--bg-surface-hover)] border border-[var(--border)]'}">
+                                ${cat}
+                            </button>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="space-y-6">
+                        ${filtered.length === 0 ? `
+                            <div class="text-center py-16 text-[var(--text-muted)] border-2 border-dashed border-[var(--border)] rounded-2xl">
+                                <i data-lucide="file-text" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
+                                <p>暂无文章，点击"写文章"开始创作吧～</p>
+                            </div>
+                        ` : ''}
+                        ${visible.map((post, i) => `
+                            <article class="glass-panel p-8 rounded-2xl group hover:border-[var(--accent)] transition-all transform hover:-translate-y-1 shadow-lg relative" style="animation: fadeIn 0.5s ease-out ${i*0.1}s forwards; opacity: 0;">
+                                <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    ${(currentUser && post.user_id === currentUser.id) ? `
+                                        <button onclick="event.stopPropagation(); actions.toggleArticlePublic(${post.id}, ${post.is_public || false})" class="p-2 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--accent)] hover:text-white text-[var(--text-muted)] transition-all border border-[var(--border)]" title="${post.is_public ? '取消公开' : '公开分享'}">
+                                            <i data-lucide="${post.is_public ? 'eye-off' : 'share-2'}" class="w-4 h-4"></i>
+                                        </button>
+                                    ` : ''}
+                                    ${((currentUser && post.user_id === currentUser.id) || (!currentUser && !post.user_id)) ? `
+                                        <button onclick="event.stopPropagation(); actions.showArticleModal(${post.id})" class="p-2 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--accent)] hover:text-white text-[var(--text-muted)] transition-all border border-[var(--border)]">
+                                            <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); actions.confirmDeleteArticle(${post.id})" class="p-2 rounded-lg bg-[var(--bg-surface)] hover:bg-red-500 hover:text-white text-[var(--text-muted)] transition-all border border-[var(--border)]">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                                <div class="cursor-pointer" onclick="router.navigate('article', ${post.id})">
+                                    <div class="flex flex-col md:flex-row md:items-baseline md:justify-between mb-4">
+                                        <h3 class="text-2xl font-bold group-hover:text-[var(--accent)] transition-colors">${post.title}</h3>
+                                        <span class="text-sm font-mono text-[var(--text-muted)] mt-1 md:mt-0 px-3 py-1 rounded-full bg-[var(--bg-surface)] border border-[var(--border)]">${new Date(post.created_at || post.date).toLocaleDateString()}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 mb-4">
+                                        <span class="text-xs font-bold uppercase tracking-wider text-[var(--accent)] px-2 py-1 bg-[var(--accent)]/10 rounded">${post.category || 'General'}</span>
+                                    </div>
+                                    <p class="text-[var(--text-muted)] text-lg line-clamp-2 mb-4">${escapeHtml(markdown.previewText(post.content || '', 120))}</p>
+                                    <div class="flex items-center text-[var(--accent)] font-medium text-sm group-hover:underline">阅读全文 <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i></div>
+                                </div>
+                            </article>
+                        `).join('')}
+                    </div>
+
+                    ${hasMore ? `
+                        <div class="mt-10 flex flex-col items-center gap-4">
+                            <button onclick="actions.loadMoreArticles()" class="px-6 py-3 rounded-xl bg-[var(--bg-surface)] text-[var(--text-main)] border border-[var(--border)] hover:bg-[var(--bg-surface-hover)] transition-colors font-medium">
+                                加载更多
+                            </button>
+                            <div id="articles-sentinel" class="h-6"></div>
+                        </div>
+                    ` : ''}
+                </div>
+                `;
+            },
+
+            ArticleDetail: (id) => {
+                const post = articlesStore.getById(id);
+                if (!post) return `<div class="text-center py-20 text-[var(--text-muted)]">文章不存在</div>`;
+                return `
+                    <div class="max-w-3xl mx-auto animate-[fadeIn_0.5s_ease-out]">
+                        <button onclick="router.navigate('articles')" class="group flex items-center text-sm font-medium text-[var(--text-muted)] hover:text-[var(--accent)] mb-8 transition-colors bg-[var(--bg-surface)] px-4 py-2 rounded-full w-fit border border-[var(--border)]">
+                            <i data-lucide="arrow-left" class="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform"></i> 返回
+                        </button>
+                        <article class="glass-panel p-8 md:p-12 rounded-3xl shadow-xl border border-[var(--border)]">
+                            <header class="mb-10 pb-8 border-b border-[var(--border)]">
+                                <div class="flex gap-2 mb-6">
+                                    <span class="text-xs font-bold text-white bg-[var(--accent)] px-3 py-1 rounded-full shadow-lg shadow-[var(--accent)]/30">${post.category || 'General'}</span>
+                                </div>
+                                <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 leading-tight text-[var(--text-main)]">${post.title}</h1>
+                                <div class="text-[var(--text-muted)] font-medium flex items-center gap-2">
+                                    <i data-lucide="clock" class="w-4 h-4"></i> ${new Date(post.created_at || post.date).toLocaleDateString()}
+                                </div>
+                            </header>
+                            <div class="markdown-body">
+                                ${markdown.renderContent(post.content || '')}
+                            </div>
+                        </article>
+                    </div>
+                `;
+            },
+
+            Life: () => {
+                const records = lifeStore.getAllSorted();
+                const visibleCount = appState.lifeVisibleCount || appState.lifePageSize || 18;
+                const visible = records.slice(0, visibleCount);
+                const hasMore = visible.length < records.length;
+                return `
+                <div class="animate-[fadeIn_0.5s_ease-out]">
+                    <div class="flex justify-between items-end mb-10">
+                        <div>
+                            <h2 class="text-4xl font-bold tracking-tight mb-2">Moments</h2>
+                            <p class="text-[var(--text-muted)]">Fragments of time, captured.</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center p-1 rounded-full border border-[var(--border)] bg-[var(--bg-surface)]/50 backdrop-blur-md">
+                                <button onclick="actions.setLifeVisibility('private')" class="px-4 py-2 rounded-full text-sm font-medium transition-all ${viewState.lifeVisibility === 'private' ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-muted)] hover:bg-[var(--bg-surface-hover)] hover:text-[var(--accent)]'}">私密</button>
+                                <button onclick="actions.setLifeVisibility('public')" class="px-4 py-2 rounded-full text-sm font-medium transition-all ${viewState.lifeVisibility === 'public' ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-muted)] hover:bg-[var(--bg-surface-hover)] hover:text-[var(--accent)]'}">公开</button>
+                            </div>
+                            ${currentUser ? `
+                                <button onclick="actions.showLifeModal()" class="flex items-center gap-2 px-5 py-2.5 bg-[var(--accent)] text-white rounded-full font-medium hover:opacity-90 transition-all shadow-lg shadow-[var(--accent)]/30">
+                                    <i data-lucide="plus" class="w-4 h-4"></i> 添加生活记录
+                                </button>
+                            ` : `
+                                <button onclick="actions.requireLogin()" class="flex items-center gap-2 px-5 py-2.5 bg-[var(--bg-surface)] text-[var(--text-muted)] rounded-full font-medium border border-[var(--border)] hover:bg-[var(--bg-surface-hover)] transition-all">
+                                    <i data-lucide="log-in" class="w-4 h-4"></i> 登录后记录
+                                </button>
+                            `}
+                        </div>
+                    </div>
+
+                    ${appState.lifeLoading ? `<div class="text-sm text-[var(--text-muted)] mb-6">加载中...</div>` : ''}
+                    
+                    ${records.length === 0 ? `
+                        <div class="text-center py-16 text-[var(--text-muted)] border-2 border-dashed border-[var(--border)] rounded-2xl">
+                            <i data-lucide="image" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
+                            <p>暂无生活记录，点击"添加生活记录"开始记录吧～</p>
+                        </div>
+                    ` : `
+                    <div class="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
+                        ${visible.map((item, i) => `
+                            <div class="break-inside-avoid relative group rounded-2xl overflow-hidden glass-panel p-2 shadow-lg hover:shadow-2xl transition-all duration-500" style="animation: fadeIn 0.6s ease-out ${i*0.1}s forwards; opacity: 0;">
+                                <div class="absolute top-4 right-4 z-10 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    ${(currentUser && item.user_id === currentUser.id) ? `
+                                        <button onclick="event.stopPropagation(); actions.toggleLifePublic(${item.id}, ${item.is_public || false})" class="p-2 rounded-lg bg-black/50 hover:bg-[var(--accent)] text-white transition-all" title="${item.is_public ? '取消公开' : '公开分享'}">
+                                            <i data-lucide="${item.is_public ? 'eye-off' : 'share-2'}" class="w-4 h-4"></i>
+                                        </button>
+                                    ` : ''}
+                                    ${((currentUser && item.user_id === currentUser.id) || (!currentUser && !item.user_id)) ? `
+                                        <button onclick="event.stopPropagation(); actions.confirmDeleteLife(${item.id})" class="p-2 rounded-lg bg-black/50 hover:bg-red-500 text-white transition-all">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                                <div class="overflow-hidden rounded-xl relative cursor-pointer" onclick="actions.previewImage('${(item.images && item.images[0]) || ''}')">
+                                    <img src="${(item.images && item.images[0]) || ''}" class="w-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" onerror="this.src='https://via.placeholder.com/400x300?text=Image'">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                                        <p class="text-white font-medium translate-y-4 group-hover:translate-y-0 transition-transform duration-300 text-lg">${item.description || item.desc || ''}</p>
+                                    </div>
+                                </div>
+                                ${item.images && item.images.length > 1 ? `
+                                    <div class="flex gap-1 mt-2 overflow-x-auto">
+                                        ${item.images.slice(1).map(img => `
+                                            <img src="${img}" class="w-16 h-16 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity" onclick="actions.previewImage('${img}')">
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    ${hasMore ? `
+                        <div class="mt-10 flex flex-col items-center gap-4">
+                            <button onclick="actions.loadMoreLife()" class="px-6 py-3 rounded-xl bg-[var(--bg-surface)] text-[var(--text-main)] border border-[var(--border)] hover:bg-[var(--bg-surface-hover)] transition-colors font-medium">
+                                加载更多
+                            </button>
+                            <div id="life-sentinel" class="h-6"></div>
+                        </div>
+                    ` : ''}
+                    `}
+                </div>
+                `;
+            },
+
+            Gratitude: () => {
+                const items = gratitudeStore.getAll();
+                return `
+                    <div class="max-w-2xl mx-auto animate-[fadeIn_0.5s_ease-out]">
+                        <div class="glass-panel p-8 md:p-10 rounded-3xl shadow-xl">
+                            <div class="text-center mb-10">
+                                <div class="w-16 h-16 bg-[var(--accent)]/20 text-[var(--accent)] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                    <i data-lucide="heart" class="w-8 h-8 fill-current"></i>
+                                </div>
+                                <h2 class="text-3xl font-bold tracking-tight mb-2">Gratitude Journal</h2>
+                                <p class="text-[var(--text-muted)]">Focus on the good.</p>
+                            </div>
+
+                            <div class="mb-10">
+                                ${currentUser ? `
+                                    <div class="space-y-3">
+                                        <div class="flex items-center justify-between gap-3">
+                                            <select id="gratitude-mood" class="bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)]">
+                                                <option value="">心情</option>
+                                                <option value="1">😞 很糟</option>
+                                                <option value="2">😕 不太好</option>
+                                                <option value="3">🙂 一般</option>
+                                                <option value="4">😊 不错</option>
+                                                <option value="5">😄 很棒</option>
+                                            </select>
+                                            <button onclick="actions.addGratitude()" class="bg-[var(--accent)] text-white px-6 py-2.5 rounded-xl hover:opacity-90 transition-all font-medium shadow-lg shadow-[var(--accent)]/30 flex-shrink-0">保存</button>
+                                        </div>
+
+                                        <textarea id="gratitude-input" rows="3" placeholder="今天有哪些让你感到开心/感恩的事？（支持多行）"
+                                            onkeydown="actions.handleGratitudeKeydown(event)"
+                                            class="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] transition-all text-[var(--text-main)] placeholder:text-[var(--text-muted)]/50 shadow-inner text-lg resize-none"></textarea>
+                                    </div>
+                                    <div class="mt-2 text-xs text-[var(--text-muted)]">提示：按 <span class="font-mono">Ctrl</span> + <span class="font-mono">Enter</span> 快速保存</div>
+                                ` : `
+                                    <div class="text-center py-10 text-[var(--text-muted)] border-2 border-dashed border-[var(--border)] rounded-2xl">
+                                        <i data-lucide="lock" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
+                                        <p class="mb-4">登录后才可以写感想</p>
+                                        <button onclick="actions.requireLogin()" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[var(--accent)] text-white font-medium hover:opacity-90 transition-all shadow-lg shadow-[var(--accent)]/30">
+                                            <i data-lucide="log-in" class="w-4 h-4"></i> 登录/注册
+                                        </button>
+                                    </div>
+                                `}
+                            </div>
+
+                            ${currentUser ? `
+                                <div class="space-y-3">
+                                    ${items.length === 0 ? `<div class="text-center py-12 text-[var(--text-muted)] border-2 border-dashed border-[var(--border)] rounded-2xl">Your journal is empty. Add a spark.</div>` : ''}
+                                    ${items.map(item => {
+                                        const preview = (item.text || '').replace(/\s+/g, ' ').trim();
+                                        return `
+                                        <div class="flex items-center p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] hover:bg-[var(--bg-surface-hover)] transition-all group ${item.completed ? 'opacity-60 grayscale' : ''}">
+                                            <button onclick="event.stopPropagation(); gratitudeStore.toggle(${item.id})" class="flex-shrink-0 w-6 h-6 rounded-full border-2 border-[var(--text-muted)] flex items-center justify-center mr-4 transition-colors ${item.completed ? 'bg-[var(--accent)] border-[var(--accent)]' : 'hover:border-[var(--accent)]'}">
+                                                ${item.completed ? '<i data-lucide="check" class="w-3 h-3 text-white"></i>' : ''}
+                                            </button>
+                                            <div class="flex-1 min-w-0 cursor-pointer" onclick="actions.showGratitudeModal(${item.id})">
+                                                <p class="font-medium truncate ${item.completed ? 'line-through text-[var(--text-muted)]' : 'text-[var(--text-main)]'}">${escapeHtml(preview || '（空）')}</p>
+                                                <div class="text-xs text-[var(--text-muted)] mt-0.5">${new Date(item.date).toLocaleDateString()}</div>
+                                            </div>
+                                            <button onclick="event.stopPropagation(); actions.showGratitudeModal(${item.id})" class="opacity-0 group-hover:opacity-100 text-[var(--text-muted)] hover:text-[var(--accent)] transition-all p-2 rounded-lg hover:bg-[var(--accent)]/10" title="查看/编辑">
+                                                <i data-lucide="file-text" class="w-4 h-4"></i>
+                                            </button>
+                                            <button onclick="event.stopPropagation(); gratitudeStore.delete(${item.id})" class="opacity-0 group-hover:opacity-100 text-[var(--text-muted)] hover:text-red-500 transition-all p-2 rounded-lg hover:bg-red-500/10" title="删除">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    `;
+                                    }).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+        };
+
+        // --- 5. Handlers & Router ---
+        const actions = {
+            requireLogin: () => {
+                ui.toast('请先登录', 'error');
+                actions.showAuthModal();
+            },
+
+            openHabitSettings: () => {
+                if (!currentUser) {
+                    actions.requireLogin();
+                    return;
+                }
+                const s = habitStore.getSettings();
+                const modalHtml = `
+                    <div class="bg-[var(--bg-secondary)] rounded-3xl p-6 md:p-8 max-w-lg w-full mx-4 max-h-[90vh] overflow-hidden shadow-2xl flex flex-col" onclick="event.stopPropagation()">
+                        <div class="flex justify-between items-center mb-4 flex-shrink-0">
+                            <div>
+                                <h3 class="text-2xl font-bold text-[var(--text-main)]">提醒/习惯打卡</h3>
+                                <p class="text-xs text-[var(--text-muted)] mt-1">每天提醒你写感想，并统计连续天数</p>
+                            </div>
+                            <button onclick="ui.closeModal()" class="p-2 rounded-full hover:bg-[var(--bg-surface)] text-[var(--text-muted)] transition-colors">
+                                <i data-lucide="x" class="w-6 h-6"></i>
+                            </button>
+                        </div>
+
+                        <div class="space-y-4 flex-1 overflow-y-auto pr-2">
+                            <label class="flex items-center justify-between p-4 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)]">
+                                <div>
+                                    <div class="font-medium">开启每日提醒</div>
+                                    <div class="text-xs text-[var(--text-muted)]">在设置时间内，如果今天还没写感想/文章，会弹出提醒</div>
+                                </div>
+                                <input id="habit-enabled" type="checkbox" ${s.enabled ? 'checked' : ''} class="w-5 h-5 accent-[var(--accent)]">
+                            </label>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="p-4 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)]">
+                                    <div class="text-sm font-medium mb-2">提醒时间</div>
+                                    <input id="habit-time" type="time" value="${escapeHtml(s.time)}" class="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] text-[var(--text-main)]">
+                                </div>
+                                <div class="p-4 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)]">
+                                    <div class="text-sm font-medium mb-2">提醒方式</div>
+                                    <select id="habit-channel" class="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] text-[var(--text-main)]">
+                                        <option value="toast" ${s.channel === 'toast' ? 'selected' : ''}>站内提示</option>
+                                        <option value="notification" ${s.channel === 'notification' ? 'selected' : ''}>系统通知(需授权)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="p-4 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)]">
+                                <div class="text-sm font-medium">当前状态</div>
+                                <div class="text-xs text-[var(--text-muted)] mt-1">今日：${habitStore._todayDone() ? '已完成' : '未完成'} · 连续：${habitStore.streakDays()} 天</div>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3 justify-end pt-4 flex-shrink-0">
+                            <button onclick="ui.closeModal()" class="px-6 py-2.5 rounded-xl border border-[var(--border)] text-[var(--text-muted)] hover:bg-[var(--bg-surface)] transition-colors">关闭</button>
+                            <button onclick="actions.saveHabitSettings()" class="px-6 py-2.5 rounded-xl bg-[var(--accent)] text-white font-medium hover:opacity-90 transition-all shadow-lg shadow-[var(--accent)]/30">保存</button>
+                        </div>
+                    </div>
+                `;
+                ui.showModal(modalHtml);
+            },
+
+            saveHabitSettings: () => {
+                const enabledEl = document.getElementById('habit-enabled');
+                const timeEl = document.getElementById('habit-time');
+                const channelEl = document.getElementById('habit-channel');
+                const enabled = !!enabledEl?.checked;
+                const time = (timeEl?.value || '21:30').toString();
+                const channel = (channelEl?.value || 'toast').toString();
+                habitStore.setSettings({ enabled, time, channel });
+                ui.toast('已保存');
+                ui.closeModal();
+                router.render();
+            },
+
+            setArticleEditorMode: (mode) => {
+                const editBtn = document.getElementById('article-mode-edit');
+                const previewBtn = document.getElementById('article-mode-preview');
+                const editorEl = document.getElementById('article-markdown');
+                const previewEl = document.getElementById('article-preview');
+                if (!editorEl || !previewEl) return;
+
+                const isPreview = mode === 'preview';
+                if (editBtn && previewBtn) {
+                    editBtn.className = `px-4 py-2 rounded-full text-sm font-medium transition-all ${!isPreview ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-muted)] hover:bg-[var(--bg-surface-hover)] hover:text-[var(--accent)]'}`;
+                    previewBtn.className = `px-4 py-2 rounded-full text-sm font-medium transition-all ${isPreview ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-muted)] hover:bg-[var(--bg-surface-hover)] hover:text-[var(--accent)]'}`;
+                }
+
+                if (isPreview) {
+                    previewEl.innerHTML = markdown.renderContent(editorEl.value || '');
+                    previewEl.classList.remove('hidden');
+                    editorEl.classList.add('hidden');
+                    markdown.applyHighlight(previewEl);
+                } else {
+                    previewEl.classList.add('hidden');
+                    editorEl.classList.remove('hidden');
+                    editorEl.focus();
+                }
+            },
+
+            _getArticleMdEl: () => document.getElementById('article-markdown'),
+            _refreshArticlePreviewIfOpen: () => {
+                const editorEl = actions._getArticleMdEl();
+                const previewEl = document.getElementById('article-preview');
+                if (!editorEl || !previewEl) return;
+                if (previewEl.classList.contains('hidden')) return;
+                previewEl.innerHTML = markdown.renderContent(editorEl.value || '');
+                markdown.applyHighlight(previewEl);
+            },
+            _applyToSelection: (fn) => {
+                const el = actions._getArticleMdEl();
+                if (!el) return;
+                const start = el.selectionStart ?? 0;
+                const end = el.selectionEnd ?? 0;
+                const selected = el.value.slice(start, end);
+                const next = fn({ value: el.value, start, end, selected });
+                if (!next) return;
+                el.value = next.value;
+                const nextStart = typeof next.start === 'number' ? next.start : start;
+                const nextEnd = typeof next.end === 'number' ? next.end : end;
+                try {
+                    el.setSelectionRange(nextStart, nextEnd);
+                } catch (e) {
+                    // noop
+                }
+                el.focus();
+                actions._refreshArticlePreviewIfOpen();
+            },
+            mdWrap: (prefix, suffix, placeholder = '') => {
+                actions.setArticleEditorMode('edit');
+                actions._applyToSelection(({ value, start, end, selected }) => {
+                    const body = selected || placeholder;
+                    const insert = `${prefix}${body}${suffix}`;
+                    const nextValue = value.slice(0, start) + insert + value.slice(end);
+                    if (selected) {
+                        return { value: nextValue, start, end: start + insert.length };
+                    }
+                    return { value: nextValue, start: start + prefix.length, end: start + prefix.length + body.length };
+                });
+            },
+            mdPrefixLines: (prefix) => {
+                actions.setArticleEditorMode('edit');
+                actions._applyToSelection(({ value, start, end, selected }) => {
+                    const before = value.slice(0, start);
+                    const after = value.slice(end);
+                    const block = selected || '';
+                    const lines = (block || '').split(/\r?\n/);
+                    const nextBlock = lines.map(l => (l.trim().length ? `${prefix}${l}` : l)).join('\n');
+                    const nextValue = before + nextBlock + after;
+                    const nextEnd = before.length + nextBlock.length;
+                    return { value: nextValue, start: before.length, end: nextEnd };
+                });
+            },
+            mdHeading: (level = 2) => {
+                const hashes = '#'.repeat(Math.max(1, Math.min(level, 6)));
+                actions.mdPrefixLines(`${hashes} `);
+            },
+            mdBulletList: () => actions.mdPrefixLines('- '),
+            mdNumberList: () => {
+                actions.setArticleEditorMode('edit');
+                actions._applyToSelection(({ value, start, end, selected }) => {
+                    const before = value.slice(0, start);
+                    const after = value.slice(end);
+                    const block = selected || '';
+                    const lines = (block || '').split(/\r?\n/);
+                    let n = 1;
+                    const nextBlock = lines.map(l => {
+                        if (!l.trim().length) return l;
+                        const out = `${n}. ${l}`;
+                        n++;
+                        return out;
+                    }).join('\n');
+                    const nextValue = before + nextBlock + after;
+                    return { value: nextValue, start: before.length, end: before.length + nextBlock.length };
+                });
+            },
+            mdQuote: () => actions.mdPrefixLines('> '),
+            mdHr: () => {
+                actions.setArticleEditorMode('edit');
+                actions._applyToSelection(({ value, start, end }) => {
+                    const insert = `\n\n---\n\n`;
+                    const nextValue = value.slice(0, start) + insert + value.slice(end);
+                    const pos = start + insert.length;
+                    return { value: nextValue, start: pos, end: pos };
+                });
+            },
+            mdCodeBlock: (lang = '') => {
+                actions.setArticleEditorMode('edit');
+                actions._applyToSelection(({ value, start, end, selected }) => {
+                    const fence = '```';
+                    const body = selected || 'code';
+                    const insert = `\n\n${fence}${lang}\n${body}\n${fence}\n\n`;
+                    const nextValue = value.slice(0, start) + insert + value.slice(end);
+                    const cursorStart = start + (`\n\n${fence}${lang}\n`).length;
+                    const cursorEnd = cursorStart + body.length;
+                    return { value: nextValue, start: cursorStart, end: cursorEnd };
+                });
+            },
+            mdLink: () => {
+                const url = prompt('请输入链接地址:', 'https://');
+                if (!url) return;
+                actions.mdWrap('[', `](${url})`, '链接文字');
+            },
+            mdImage: () => {
+                const url = prompt('请输入图片地址(URL):', 'https://');
+                if (!url) return;
+                actions.setArticleEditorMode('edit');
+                actions._applyToSelection(({ value, start, end, selected }) => {
+                    const alt = selected || '图片描述';
+                    const insert = `![${alt}](${url})`;
+                    const nextValue = value.slice(0, start) + insert + value.slice(end);
+                    return { value: nextValue, start: start + 2, end: start + 2 + alt.length };
+                });
+            },
+            mdTemplate: () => {
+                const tpl = [
+                    '# 标题',
+                    '',
+                    '## 概要',
+                    '- 要点 1',
+                    '- 要点 2',
+                    '',
+                    '## 正文',
+                    '在这里开始写作…',
+                    '',
+                    '> 一段引用/灵感',
+                    '',
+                    '## 代码示例',
+                    '```js',
+                    'console.log("Hello World")',
+                    '```',
+                    '',
+                    '---',
+                    '',
+                    '## 图片',
+                    '![](https://example.com/image.png)'
+                ].join('\n');
+
+                actions.setArticleEditorMode('edit');
+                const el = actions._getArticleMdEl();
+                if (!el) return;
+                if ((el.value || '').trim().length) {
+                    const ok = confirm('编辑器里已有内容，确定要插入模板吗？（将插入到光标处）');
+                    if (!ok) return;
+                }
+                actions._applyToSelection(({ value, start, end }) => {
+                    const insert = (start === 0 ? '' : '\n\n') + tpl + '\n\n';
+                    const nextValue = value.slice(0, start) + insert + value.slice(end);
+                    const pos = start + insert.length;
+                    return { value: nextValue, start: pos, end: pos };
+                });
+            },
+
+            initArticleWysiwygEditor: (initialMarkdown = '') => {
+                try {
+                    if (window._articleEditor && typeof window._articleEditor.destroy === 'function') {
+                        window._articleEditor.destroy();
+                    }
+                } catch (e) {}
+                window._articleEditor = null;
+
+                const host = document.getElementById('article-editor');
+                const Editor = window.toastui?.Editor;
+                if (!host || !Editor) return;
+
+                window._articleEditor = new Editor({
+                    el: host,
+                    height: '420px',
+                    initialEditType: 'wysiwyg',
+                    previewStyle: 'vertical',
+                    initialValue: initialMarkdown || '',
+                    usageStatistics: false,
+                    hooks: {
+                        addImageBlobHook: (blob, callback) => {
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                                callback(reader.result, blob?.name || 'image');
+                            };
+                            reader.readAsDataURL(blob);
+                        }
+                    }
+                });
+            },
+
+            destroyArticleWysiwygEditor: () => {
+                try {
+                    if (window._articleEditor && typeof window._articleEditor.destroy === 'function') {
+                        window._articleEditor.destroy();
+                    }
+                } catch (e) {}
+                window._articleEditor = null;
+            },
+
+            getArticleEditorMarkdown: () => {
+                try {
+                    if (window._articleEditor && typeof window._articleEditor.getMarkdown === 'function') {
+                        return window._articleEditor.getMarkdown() || '';
+                    }
+                } catch (e) {}
+                const contentEl = document.getElementById('article-markdown');
+                return contentEl?.value || '';
+            },
+
+            setArticleVisibility: async (mode) => {
+                if (mode !== 'public' && !currentUser) {
+                    actions.requireLogin();
+                    return;
+                }
+                const nextMode = mode === 'public' ? 'public' : 'private';
+                if (viewState.articleVisibility === nextMode) return;
+                viewState.articleVisibility = nextMode;
+                appState.articleFilter = null;
+                appState.articleVisibleCount = appState.articlePageSize;
+
+                const shouldFetchPublic = viewState.articleVisibility === 'public' && (!articlesStore._cachePublic || articlesStore._cachePublic.length === 0);
+                const shouldFetchPrivate = viewState.articleVisibility !== 'public' && currentUser && !!currentAccessToken && (!articlesStore._cache || articlesStore._cache.length === 0);
+
+                if (shouldFetchPublic || shouldFetchPrivate) {
+                    appState.articleLoading = true;
+                    router.render();
+
+                    (async () => {
+                        try {
+                            if (shouldFetchPublic) {
+                                await articlesStore.fetchPublicFromCloud({
+                                    from: 0,
+                                    limit: (appState.articlePageSize || 10) * 3,
+                                    reset: true
+                                });
+                            } else {
+                                await articlesStore.fetchFromCloud();
+                            }
+                        } catch (e) {
+                            console.error(e);
+                        } finally {
+                            appState.articleLoading = false;
+                            router.render();
+                        }
+                    })();
+                    return;
+                }
+
+                router.render();
+            },
+
+            setLifeVisibility: async (mode) => {
+                if (mode !== 'public' && !currentUser) {
+                    actions.requireLogin();
+                    return;
+                }
+                const nextMode = mode === 'public' ? 'public' : 'private';
+                if (viewState.lifeVisibility === nextMode) return;
+                viewState.lifeVisibility = nextMode;
+                appState.lifeVisibleCount = appState.lifePageSize;
+
+                const shouldFetchPublic = viewState.lifeVisibility === 'public' && (!lifeStore._cachePublic || lifeStore._cachePublic.length === 0);
+                const shouldFetchPrivate = viewState.lifeVisibility !== 'public' && currentUser && !!currentAccessToken && (!lifeStore._cache || lifeStore._cache.length === 0);
+
+                if (shouldFetchPublic || shouldFetchPrivate) {
+                    appState.lifeLoading = true;
+                    router.render();
+
+                    (async () => {
+                        try {
+                            if (shouldFetchPublic) {
+                                await lifeStore.fetchPublicFromCloud({
+                                    from: 0,
+                                    limit: (appState.lifePageSize || 18) * 3,
+                                    reset: true
+                                });
+                            } else {
+                                await lifeStore.fetchFromCloud();
+                            }
+                        } catch (e) {
+                            console.error(e);
+                        } finally {
+                            appState.lifeLoading = false;
+                            router.render();
+                        }
+                    })();
+                    return;
+                }
+
+                router.render();
+            },
+
+            addGratitude: () => {
+                if (!currentUser) {
+                    actions.requireLogin();
+                    return;
+                }
+                const input = document.getElementById('gratitude-input');
+                const text = (input?.value || '').trim();
+                if (!text) return;
+                const moodEl = document.getElementById('gratitude-mood');
+                const moodRaw = (moodEl?.value || '').trim();
+                const mood = moodRaw ? parseInt(moodRaw, 10) : null;
+                gratitudeStore.add(text, (Number.isFinite(mood) ? mood : null));
+                input.value = '';
+                if (moodEl) moodEl.value = '';
+                input.focus();
+            },
+
+            handleGratitudeKeydown: (e) => {
+                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    actions.addGratitude();
+                }
+            },
+
+            showGratitudeModal: (id) => {
+                if (!currentUser) {
+                    actions.requireLogin();
+                    return;
+                }
+                const item = gratitudeStore.getAll().find(i => i.id === id);
+                if (!item) return;
+
+                const modalHtml = `
+                    <div class="bg-[var(--bg-secondary)] rounded-3xl p-6 md:p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden shadow-2xl flex flex-col" onclick="event.stopPropagation()">
+                        <div class="flex justify-between items-center mb-4 flex-shrink-0">
+                            <div>
+                                <h3 class="text-2xl font-bold text-[var(--text-main)]">Gratitude Journal</h3>
+                                <p class="text-xs text-[var(--text-muted)] mt-1">${new Date(item.date).toLocaleString()}</p>
+                            </div>
+                            <button onclick="ui.closeModal()" class="p-2 rounded-full hover:bg-[var(--bg-surface)] text-[var(--text-muted)] transition-colors">
+                                <i data-lucide="x" class="w-6 h-6"></i>
+                            </button>
+                        </div>
+
+                        <div class="space-y-4 flex-1 overflow-y-auto pr-2">
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--text-muted)] mb-2">全文（可直接编辑）</label>
+                                <textarea id="gratitude-detail-text" rows="8"
+                                    class="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] text-[var(--text-main)] resize-none"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--text-muted)] mb-2">补充一条（不会覆盖原文）</label>
+                                <textarea id="gratitude-append-text" rows="3" placeholder="写下今天新的感恩..."
+                                    class="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] text-[var(--text-main)] resize-none"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row gap-3 justify-end pt-4 flex-shrink-0">
+                            <button onclick="ui.closeModal()" class="px-6 py-2.5 rounded-xl border border-[var(--border)] text-[var(--text-muted)] hover:bg-[var(--bg-surface)] transition-colors">关闭</button>
+                            <button onclick="actions.saveGratitudeEdit(${item.id})" class="px-6 py-2.5 rounded-xl bg-[var(--accent)] text-white font-medium hover:opacity-90 transition-all shadow-lg shadow-[var(--accent)]/30">保存修改</button>
+                            <button onclick="actions.appendGratitude(${item.id})" class="px-6 py-2.5 rounded-xl border border-[var(--border)] text-[var(--text-main)] hover:bg-[var(--bg-surface)] transition-colors">追加补充</button>
+                        </div>
+                    </div>
+                `;
+
+                ui.showModal(modalHtml);
+                setTimeout(() => {
+                    const detailEl = document.getElementById('gratitude-detail-text');
+                    if (detailEl) detailEl.value = item.text || '';
+                    const appendEl = document.getElementById('gratitude-append-text');
+                    if (appendEl) appendEl.value = '';
+                }, 0);
+            },
+
+            saveGratitudeEdit: (id) => {
+                const detailEl = document.getElementById('gratitude-detail-text');
+                const text = (detailEl?.value || '').trim();
+                if (!text) {
+                    ui.toast('内容不能为空', 'error');
+                    return;
+                }
+                gratitudeStore.update(id, { text });
+                ui.toast('已保存');
+                ui.closeModal();
+            },
+
+            appendGratitude: (id) => {
+                const appendEl = document.getElementById('gratitude-append-text');
+                const extra = (appendEl?.value || '').trim();
+                if (!extra) {
+                    ui.toast('请先填写补充内容', 'error');
+                    return;
+                }
+                gratitudeStore.append(id, extra);
+                ui.toast('已追加');
+                ui.closeModal();
+            },
+            
+            // Article Actions
+            filterArticles: (category) => {
+                appState.articleFilter = category;
+                appState.articleVisibleCount = appState.articlePageSize;
+                router.render();
+            },
+
+            loadMoreArticles: () => {
+                const nextCount = (appState.articleVisibleCount || 0) + (appState.articlePageSize || 10);
+                appState.articleVisibleCount = nextCount;
+
+                const isPublic = viewState.articleVisibility === 'public';
+                const cached = articlesStore._cachePublic || [];
+                const needMore = isPublic && nextCount > cached.length;
+
+                if (needMore && !appState.articleLoading) {
+                    appState.articleLoading = true;
+                    router.render();
+
+                    (async () => {
+                        try {
+                            await articlesStore.fetchPublicFromCloud({
+                                from: cached.length,
+                                limit: (appState.articlePageSize || 10) * 3
+                            });
+                        } catch (e) {
+                            console.error(e);
+                        } finally {
+                            appState.articleLoading = false;
+                            router.render();
+                        }
+                    })();
+                    return;
+                }
+
+                router.render();
+            },
+
+            loadMoreLife: () => {
+                const nextCount = (appState.lifeVisibleCount || 0) + (appState.lifePageSize || 18);
+                appState.lifeVisibleCount = nextCount;
+
+                const isPublic = viewState.lifeVisibility === 'public';
+                const cached = lifeStore._cachePublic || [];
+                const needMore = isPublic && nextCount > cached.length;
+
+                if (needMore && !appState.lifeLoading) {
+                    appState.lifeLoading = true;
+                    router.render();
+
+                    (async () => {
+                        try {
+                            await lifeStore.fetchPublicFromCloud({
+                                from: cached.length,
+                                limit: (appState.lifePageSize || 18) * 3
+                            });
+                        } catch (e) {
+                            console.error(e);
+                        } finally {
+                            appState.lifeLoading = false;
+                            router.render();
+                        }
+                    })();
+                    return;
+                }
+
+                router.render();
+            },
+            
+            showArticleModal: (id = null) => {
+                if (!currentUser) {
+                    actions.requireLogin();
+                    return;
+                }
+                const article = id ? articlesStore.getById(id) : null;
+                const categories = articlesStore.categories();
+                const isEdit = !!article;
+
+                if (isEdit && article?.user_id && currentUser && article.user_id !== currentUser.id) {
+                    ui.toast('无法编辑他人公开内容', 'error');
+                    return;
+                }
+                
+                const modalHtml = `
+                    <div class="bg-[var(--bg-secondary)] rounded-3xl p-6 max-w-4xl w-full mx-4 max-h-[95vh] overflow-hidden shadow-2xl flex flex-col" onclick="event.stopPropagation()">
+                        <div class="flex justify-between items-center mb-4 flex-shrink-0">
+                            <h3 class="text-2xl font-bold text-[var(--text-main)]">${isEdit ? '编辑文章' : '写文章'}</h3>
+                            <button onclick="ui.closeModal()" class="p-2 rounded-full hover:bg-[var(--bg-surface)] text-[var(--text-muted)] transition-colors">
+                                <i data-lucide="x" class="w-6 h-6"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4 flex-1 overflow-y-auto pr-2">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-[var(--text-muted)] mb-2">标题 *</label>
+                                    <input type="text" id="article-title" value="${article?.title || ''}" placeholder="输入文章标题" 
+                                        class="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] text-[var(--text-main)]">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-[var(--text-muted)] mb-2">分类</label>
+                                    <input type="text" id="article-category" value="${article?.category || ''}" placeholder="输入分类（如：Tech, Design, Life）" list="category-list"
+                                        class="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] text-[var(--text-main)]">
+                                    <datalist id="category-list">
+                                        ${categories.map(c => `<option value="${c}">`).join('')}
+                                    </datalist>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-[var(--text-muted)] mb-2">可见性</label>
+                                    <select id="article-visibility" class="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] text-[var(--text-main)]">
+                                        <option value="private" ${article?.is_public ? '' : 'selected'}>私密（仅自己可见）</option>
+                                        <option value="public" ${article?.is_public ? 'selected' : ''}>公开（所有用户可见）</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--text-muted)] mb-2">正文 *</label>
+
+                                <div id="article-editor" class="w-full"></div>
+                            </div>
+                            
+                            <p id="article-error" class="text-red-500 text-sm hidden">标题和正文不能为空</p>
+                        </div>
+                        
+                        <div class="flex gap-3 justify-end pt-4 flex-shrink-0 border-t border-[var(--border)] mt-4">
+                            <button onclick="ui.closeModal()" class="px-6 py-2.5 rounded-xl border border-[var(--border)] text-[var(--text-muted)] hover:bg-[var(--bg-surface)] transition-colors">
+                                取消
+                            </button>
+                            <button onclick="actions.saveArticle(${id || 'null'})" id="save-article-btn" class="px-6 py-2.5 rounded-xl bg-[var(--accent)] text-white font-medium hover:opacity-90 transition-all shadow-lg shadow-[var(--accent)]/30">
+                                保存
+                            </button>
+                        </div>
+                    </div>
+                `;
+                ui.showModal(modalHtml);
+                
+                // Focus editor
+                setTimeout(() => {
+                    const initialMd = markdown.toMarkdown(article?.content || '');
+                    actions.initArticleWysiwygEditor(initialMd);
+                }, 100);
+            },
+            
+            saveArticle: (id) => {
+                if (!currentUser) {
+                    actions.requireLogin();
+                    return;
+                }
+                const title = document.getElementById('article-title').value.trim();
+                const category = document.getElementById('article-category').value.trim() || 'General';
+                const content = (actions.getArticleEditorMarkdown() || '').trim();
+                const errorEl = document.getElementById('article-error');
+                const visibilityEl = document.getElementById('article-visibility');
+                const is_public = (visibilityEl?.value || 'private') === 'public';
+                
+                if (!title || !content) {
+                    errorEl.classList.remove('hidden');
+                    return;
+                }
+                
+                if (id) {
+                    articlesStore.update(id, { title, category, content, is_public });
+                } else {
+                    articlesStore.add({ title, category, content, is_public });
+                }
+                ui.closeModal();
+            },
+            
+            confirmDeleteArticle: (id) => {
+                const modalHtml = `
+                    <div class="bg-[var(--bg-secondary)] rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl" onclick="event.stopPropagation()">
+                        <div class="text-center mb-6">
+                            <div class="w-12 h-12 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-[var(--text-main)] mb-2">确定删除这篇文章吗？</h3>
+                            <p class="text-[var(--text-muted)] text-sm">此操作无法撤销</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="ui.closeModal()" class="flex-1 px-4 py-2.5 rounded-xl border border-[var(--border)] text-[var(--text-muted)] hover:bg-[var(--bg-surface)] transition-colors">
+                                取消
+                            </button>
+                            <button onclick="articlesStore.delete(${id}); ui.closeModal();" class="flex-1 px-4 py-2.5 rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 transition-colors">
+                                删除
+                            </button>
+                        </div>
+                    </div>
+                `;
+                ui.showModal(modalHtml);
+            },
+
+            openProfileAvatarPicker: () => {
+                const input = document.getElementById('profile-avatar-file');
+                input?.click();
+            },
+
+            handleProfileAvatarChange: (e) => {
+                const file = e?.target?.files?.[0];
+                if (!file) return;
+                if (!file.type?.startsWith('image/')) {
+                    ui.toast('请选择图片文件', 'error');
+                    return;
+                }
+                if (file.size && file.size > 1500000) {
+                    ui.toast('图片太大了，请选择小于 1.5MB 的图片', 'error');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = () => {
+                    appState.profileDraftAvatar = reader.result;
+                    const img = document.getElementById('profile-avatar-preview');
+                    if (img && appState.profileDraftAvatar) img.src = appState.profileDraftAvatar;
+                };
+                reader.readAsDataURL(file);
+            },
+
+            saveProfile: async () => {
+                const user = auth.getUser();
+                if (!user) return;
+
+                const nameEl = document.getElementById('profile-name');
+                const name = (nameEl?.value || '').trim();
+                if (!name) {
+                    ui.toast('昵称不能为空', 'error');
+                    return;
+                }
+
+                const prev = profileStore.get(user.id) || {};
+                const next = {
+                    ...prev,
+                    name,
+                    avatar: appState.profileDraftAvatar || prev.avatar || null
+                };
+                profileStore.set(user.id, next);
+
+                if (supabaseClient) {
+                    const { data: upd, error } = await supabaseClient.auth.updateUser({
+                        data: { display_name: name }
+                    });
+                    if (error) {
+                        console.error(error);
+                        ui.toast('已保存到本地，但云端同步失败: ' + error.message, 'error');
+                    } else if (upd?.user) {
+                        currentUser = upd.user;
+                    }
+                }
+
+                ui.toast('资料已保存');
+                ui.closeModal();
+                auth.updateUI();
+                router.render();
+            },
+            
+            // Life Actions
+            showLifeModal: () => {
+                if (!currentUser) {
+                    actions.requireLogin();
+                    return;
+                }
+                const modalHtml = `
+                    <div class="bg-[var(--bg-secondary)] rounded-3xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl" onclick="event.stopPropagation()">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-2xl font-bold text-[var(--text-main)]">添加生活记录</h3>
+                            <button onclick="ui.closeModal()" class="p-2 rounded-full hover:bg-[var(--bg-surface)] text-[var(--text-muted)] transition-colors">
+                                <i data-lucide="x" class="w-6 h-6"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--text-muted)] mb-2">可见性</label>
+                                <select id="life-visibility" class="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] text-[var(--text-main)]">
+                                    <option value="private" selected>私密（仅自己可见）</option>
+                                    <option value="public">公开（所有用户可见）</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--text-muted)] mb-2">上传图片 (最多9张，仅支持jpg/png)</label>
+                                <div class="border-2 border-dashed border-[var(--border)] rounded-xl p-6 text-center hover:border-[var(--accent)] transition-colors cursor-pointer" onclick="document.getElementById('life-images').click()">
+                                    <input type="file" id="life-images" accept="image/jpeg,image/png" multiple class="hidden" onchange="actions.handleLifeImages(this)">
+                                    <i data-lucide="upload-cloud" class="w-10 h-10 mx-auto text-[var(--text-muted)] mb-2"></i>
+                                    <p class="text-[var(--text-muted)]">点击选择图片</p>
+                                </div>
+                                <div id="life-preview" class="grid grid-cols-3 gap-2 mt-4"></div>
+                                <p id="life-image-error" class="text-red-500 text-sm hidden mt-2">图片格式错误（仅支持jpg/png）</p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--text-muted)] mb-2">描述</label>
+                                <textarea id="life-desc" rows="3" placeholder="记录这一刻的心情..." 
+                                    class="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] text-[var(--text-main)] resize-none"></textarea>
+                            </div>
+                            
+                            <div class="flex gap-3 justify-end pt-4">
+                                <button onclick="ui.closeModal()" class="px-6 py-2.5 rounded-xl border border-[var(--border)] text-[var(--text-muted)] hover:bg-[var(--bg-surface)] transition-colors">
+                                    取消
+                                </button>
+                                <button onclick="actions.saveLife()" id="save-life-btn" class="px-6 py-2.5 rounded-xl bg-[var(--accent)] text-white font-medium hover:opacity-90 transition-all shadow-lg shadow-[var(--accent)]/30">
+                                    保存
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                ui.showModal(modalHtml);
+                window._lifeImages = [];
+            },
+            
+            handleLifeImages: (input) => {
+                const files = Array.from(input.files);
+                const errorEl = document.getElementById('life-image-error');
+                const previewEl = document.getElementById('life-preview');
+                
+                // Validate
+                const validTypes = ['image/jpeg', 'image/png'];
+                const invalidFiles = files.filter(f => !validTypes.includes(f.type));
+                if (invalidFiles.length > 0) {
+                    errorEl.classList.remove('hidden');
+                    return;
+                }
+                errorEl.classList.add('hidden');
+                
+                // Limit to 9
+                const toProcess = files.slice(0, 9 - (window._lifeImages?.length || 0));
+                
+                toProcess.forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        window._lifeImages = window._lifeImages || [];
+                        if (window._lifeImages.length < 9) {
+                            window._lifeImages.push(e.target.result);
+                            actions.renderLifePreview();
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                });
+            },
+            
+            renderLifePreview: () => {
+                const previewEl = document.getElementById('life-preview');
+                if (!previewEl) return;
+                previewEl.innerHTML = (window._lifeImages || []).map((img, idx) => `
+                    <div class="relative group">
+                        <img src="${img}" class="w-full h-24 object-cover rounded-lg">
+                        <button onclick="actions.removeLifeImage(${idx})" class="absolute top-1 right-1 p-1 rounded-full bg-black/50 text-white hover:bg-red-500 transition-colors opacity-0 group-hover:opacity-100">
+                            <i data-lucide="x" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+                `).join('');
+                lucide.createIcons();
+            },
+            
+            removeLifeImage: (idx) => {
+                window._lifeImages.splice(idx, 1);
+                actions.renderLifePreview();
+            },
+            
+            saveLife: () => {
+                if (!currentUser) {
+                    actions.requireLogin();
+                    return;
+                }
+                const images = window._lifeImages || [];
+                const desc = document.getElementById('life-desc')?.value.trim() || '';
+                const visibilityEl = document.getElementById('life-visibility');
+                const is_public = (visibilityEl?.value || 'private') === 'public';
+                
+                if (images.length === 0) {
+                    ui.toast('请至少上传一张图片');
+                    return;
+                }
+                
+                lifeStore.add({ images, desc, is_public });
+                ui.closeModal();
+            },
+            
+            confirmDeleteLife: (id) => {
+                const modalHtml = `
+                    <div class="bg-[var(--bg-secondary)] rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl" onclick="event.stopPropagation()">
+                        <div class="text-center mb-6">
+                            <div class="w-12 h-12 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-[var(--text-main)] mb-2">确定删除这条记录吗？</h3>
+                            <p class="text-[var(--text-muted)] text-sm">此操作无法撤销</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="ui.closeModal()" class="flex-1 px-4 py-2.5 rounded-xl border border-[var(--border)] text-[var(--text-muted)] hover:bg-[var(--bg-surface)] transition-colors">
+                                取消
+                            </button>
+                            <button onclick="lifeStore.delete(${id}); ui.closeModal();" class="flex-1 px-4 py-2.5 rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 transition-colors">
+                                删除
+                            </button>
+                        </div>
+                    </div>
+                `;
+                ui.showModal(modalHtml);
+            },
+            
+            previewImage: (src) => {
+                if (!src) return;
+                const modalHtml = `
+                    <div class="max-w-4xl w-full mx-4" onclick="event.stopPropagation()">
+                        <button onclick="ui.closeModal()" class="absolute top-4 right-4 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                        <img src="${src}" class="max-h-[85vh] w-auto mx-auto rounded-lg shadow-2xl">
+                    </div>
+                `;
+                ui.showModal(modalHtml);
+            },
+            
+            // Auth Actions
+            showAuthModal: (mode = 'login') => {
+                const modalHtml = `
+                    <div class="bg-[var(--bg-secondary)] rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl" onclick="event.stopPropagation()">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-2xl font-bold text-[var(--text-main)]" id="auth-title">${mode === 'login' ? '登录' : '注册'}</h3>
+                            <button onclick="ui.closeModal()" class="p-2 rounded-full hover:bg-[var(--bg-surface)] text-[var(--text-muted)] transition-colors">
+                                <i data-lucide="x" class="w-6 h-6"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--text-muted)] mb-2">邮箱</label>
+                                <input type="email" id="auth-email" placeholder="your@email.com" 
+                                    class="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] text-[var(--text-main)]">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--text-muted)] mb-2">密码</label>
+                                <input type="password" id="auth-password" placeholder="至少6位密码" 
+                                    class="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] text-[var(--text-main)]">
+                            </div>
+                            
+                            <p id="auth-error" class="text-red-500 text-sm hidden"></p>
+                            
+                            <button onclick="actions.handleAuth('${mode}')" id="auth-submit-btn" class="w-full py-3 rounded-xl bg-[var(--accent)] text-white font-medium hover:opacity-90 transition-all shadow-lg shadow-[var(--accent)]/30">
+                                ${mode === 'login' ? '登录' : '注册'}
+                            </button>
+                            
+                            <div class="text-center text-sm text-[var(--text-muted)]">
+                                ${mode === 'login' 
+                                    ? '还没有账号？<button onclick="actions.showAuthModal(\'register\')" class="text-[var(--accent)] hover:underline">立即注册</button>' 
+                                    : '已有账号？<button onclick="actions.showAuthModal(\'login\')" class="text-[var(--accent)] hover:underline">立即登录</button>'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                ui.showModal(modalHtml);
+            },
+            
+            handleAuth: async (mode) => {
+                const email = document.getElementById('auth-email').value.trim();
+                const password = document.getElementById('auth-password').value;
+                const errorEl = document.getElementById('auth-error');
+                const submitBtn = document.getElementById('auth-submit-btn');
+                
+                if (!email || !password) {
+                    errorEl.textContent = '请填写邮箱和密码';
+                    errorEl.classList.remove('hidden');
+                    return;
+                }
+                
+                if (password.length < 6) {
+                    errorEl.textContent = '密码至少6位';
+                    errorEl.classList.remove('hidden');
+                    return;
+                }
+                
+                submitBtn.disabled = true;
+                submitBtn.textContent = '处理中...';
+                
+                try {
+                    if (mode === 'login') {
+                        await auth.signIn(email, password);
+                    } else {
+                        await auth.signUp(email, password);
+                        ui.toast('注册成功！请查收验证邮件', 'info');
+                    }
+                } catch (error) {
+                    errorEl.textContent = error.message || '操作失败，请重试';
+                    errorEl.classList.remove('hidden');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = mode === 'login' ? '登录' : '注册';
+                }
+            },
+            
+            showUserMenu: () => {
+                const user = auth.getUser();
+                if (!user) return actions.showAuthModal();
+
+                appState.profileDraftAvatar = null;
+                const localProfile = profileStore.get(user.id) || {};
+                const metaName = user.user_metadata?.display_name;
+                const displayName = (localProfile.name || metaName || (user.email || '').split('@')[0] || '').toString();
+                const avatarUrl = localProfile.avatar || `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(displayName || 'User')}&backgroundColor=transparent`;
+                
+                const modalHtml = `
+                    <div class="bg-[var(--bg-secondary)] rounded-3xl p-8 max-w-sm w-full mx-4 shadow-2xl" onclick="event.stopPropagation()">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-2xl font-bold text-[var(--text-main)]">个人中心</h3>
+                            <button onclick="ui.closeModal()" class="p-2 rounded-full hover:bg-[var(--bg-surface)] text-[var(--text-muted)] transition-colors">
+                                <i data-lucide="x" class="w-6 h-6"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="p-4 bg-[var(--bg-surface)] rounded-xl border border-[var(--border)]">
+                                <div class="flex items-center gap-4">
+                                    <img id="profile-avatar-preview" src="${avatarUrl}" class="w-12 h-12 rounded-full object-cover bg-[var(--bg-secondary)] border border-[var(--border)]">
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm text-[var(--text-muted)]">已登录</p>
+                                        <p class="text-[var(--text-main)] font-medium truncate">${user.email}</p>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 space-y-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-[var(--text-muted)] mb-1">昵称</label>
+                                        <input id="profile-name" type="text" value="${escapeHtml(displayName)}" placeholder="输入昵称"
+                                            class="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] text-[var(--text-main)]">
+                                    </div>
+
+                                    <div class="flex items-center justify-between gap-3">
+                                        <input id="profile-avatar-file" type="file" accept="image/*" class="hidden" onchange="actions.handleProfileAvatarChange(event)">
+                                        <button onclick="actions.openProfileAvatarPicker()" class="flex-1 py-2.5 rounded-xl border border-[var(--border)] text-[var(--text-main)] hover:bg-[var(--bg-surface-hover)] transition-colors">上传头像</button>
+                                        <button onclick="actions.saveProfile()" class="flex-1 py-2.5 rounded-xl bg-[var(--accent)] text-white font-medium hover:opacity-90 transition-all">保存资料</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button onclick="actions.syncData()" class="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-[var(--border)] text-[var(--text-main)] hover:bg-[var(--bg-surface)] transition-colors">
+                                <i data-lucide="cloud" class="w-5 h-5"></i> 同步数据到云端
+                            </button>
+                            
+                            <button onclick="actions.handleLogout()" class="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-red-300 text-red-500 hover:bg-red-50 transition-colors">
+                                <i data-lucide="log-out" class="w-5 h-5"></i> 退出登录
+                            </button>
+                        </div>
+                    </div>
+                `;
+                ui.showModal(modalHtml);
+            },
+            
+            handleLogout: async () => {
+                try {
+                    await auth.signOut();
+                    ui.closeModal();
+                } catch (error) {
+                    ui.toast('退出失败: ' + error.message, 'error');
+                }
+            },
+            
+            syncData: async () => {
+                if (!currentUser) {
+                    ui.toast('请先登录', 'error');
+                    return;
+                }
+                
+                ui.toast('正在同步数据...', 'info');
+                
+                try {
+                    // Sync articles
+                    await articlesStore.syncToCloud();
+                    // Sync life records
+                    await lifeStore.syncToCloud();
+                    
+                    ui.toast('数据同步完成！');
+                    ui.closeModal();
+                    router.render();
+                } catch (error) {
+                    ui.toast('同步失败: ' + error.message, 'error');
+                }
+            },
+            
+            // Toggle article public status
+            toggleArticlePublic: async (id, currentStatus) => {
+                if (!currentUser) {
+                    ui.toast('请先登录', 'error');
+                    return;
+                }
+                
+                const newStatus = !currentStatus;
+                try {
+                    await api.request(`/articles/${id}`, {
+                        method: 'PUT',
+                        auth: true,
+                        body: { is_public: newStatus }
+                    });
+                } catch (e) {
+                    ui.toast('操作失败: ' + (e?.message || '未知错误'), 'error');
+                    return;
+                }
+                
+                await articlesStore.fetchFromCloud({ reset: true });
+                articlesStore._cachePublic = null;
+                if (viewState.articleVisibility === 'public') {
+                    await articlesStore.fetchPublicFromCloud({ reset: true });
+                }
+                
+                if (newStatus) {
+                    const shareUrl = `${window.location.origin}${window.location.pathname}?share=article&id=${id}`;
+                    actions.showShareModal(shareUrl, '文章');
+                } else {
+                    ui.toast('已取消公开');
+                }
+                
+                router.render();
+            },
+            
+            // Toggle life record public status
+            toggleLifePublic: async (id, currentStatus) => {
+                if (!currentUser) {
+                    ui.toast('请先登录', 'error');
+                    return;
+                }
+                
+                const newStatus = !currentStatus;
+                try {
+                    await api.request(`/life/${id}`, {
+                        method: 'PUT',
+                        auth: true,
+                        body: { is_public: newStatus }
+                    });
+                } catch (e) {
+                    ui.toast('操作失败: ' + (e?.message || '未知错误'), 'error');
+                    return;
+                }
+                
+                await lifeStore.fetchFromCloud({ reset: true });
+                lifeStore._cachePublic = null;
+                if (viewState.lifeVisibility === 'public') {
+                    await lifeStore.fetchPublicFromCloud({ reset: true });
+                }
+                
+                if (newStatus) {
+                    const shareUrl = `${window.location.origin}${window.location.pathname}?share=life&id=${id}`;
+                    actions.showShareModal(shareUrl, '生活记录');
+                } else {
+                    ui.toast('已取消公开');
+                }
+                
+                router.render();
+            },
+            
+            // Show share modal with link
+            showShareModal: (url, type) => {
+                const modalHtml = `
+                    <div class="bg-[var(--bg-secondary)] rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl" onclick="event.stopPropagation()">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-2xl font-bold text-[var(--text-main)]">分享${type}</h3>
+                            <button onclick="ui.closeModal()" class="p-2 rounded-full hover:bg-[var(--bg-surface)] text-[var(--text-muted)] transition-colors">
+                                <i data-lucide="x" class="w-6 h-6"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-xl">
+                                <i data-lucide="check-circle" class="w-6 h-6 text-green-500"></i>
+                                <p class="text-green-700 font-medium">已设为公开，任何人都可以访问</p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--text-muted)] mb-2">分享链接</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="share-url" value="${url}" readonly 
+                                        class="flex-1 bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-main)] text-sm">
+                                    <button onclick="actions.copyShareLink()" class="px-4 py-3 rounded-xl bg-[var(--accent)] text-white font-medium hover:opacity-90 transition-all">
+                                        <i data-lucide="copy" class="w-5 h-5"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <p class="text-xs text-[var(--text-muted)] text-center">点击复制按钮即可分享给朋友</p>
+                        </div>
+                    </div>
+                `;
+                ui.showModal(modalHtml);
+            },
+            
+            // Copy share link to clipboard
+            copyShareLink: () => {
+                const input = document.getElementById('share-url');
+                input.select();
+                document.execCommand('copy');
+                ui.toast('链接已复制到剪贴板！');
+            }
+        };
+
+        const ui = {
+            toggleThemeDrawer: () => {
+                const drawer = document.getElementById('theme-drawer');
+                const overlay = document.getElementById('drawer-overlay');
+                const isOpen = !drawer.classList.contains('translate-x-full');
+
+                if (isOpen) ui.closeDrawer();
+                else {
+                    overlay.classList.remove('hidden');
+                    // Force reflow
+                    void overlay.offsetWidth;
+                    overlay.classList.add('opacity-100');
+                    drawer.classList.remove('translate-x-full');
+                }
+            },
+            closeDrawer: () => {
+                const drawer = document.getElementById('theme-drawer');
+                const overlay = document.getElementById('drawer-overlay');
+                drawer.classList.add('translate-x-full');
+                overlay.classList.remove('opacity-100');
+                setTimeout(() => overlay.classList.add('hidden'), 500);
+            },
+            toggleMobileMenu: () => {
+                document.getElementById('mobile-menu').classList.toggle('hidden');
+            },
+            
+            // Modal functions
+            showModal: (content) => {
+                const modal = document.getElementById('modal-root');
+                modal.innerHTML = content;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                modal.onclick = (e) => {
+                    if (e.target === modal) ui.closeModal();
+                };
+                lucide.createIcons();
+            },
+            closeModal: () => {
+                const modal = document.getElementById('modal-root');
+                try { actions.destroyArticleWysiwygEditor(); } catch (e) {}
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                modal.innerHTML = '';
+            },
+            
+            // Toast notifications
+            toast: (message, type = 'success') => {
+                const container = document.getElementById('toast-container');
+                const colors = {
+                    success: 'bg-green-500',
+                    error: 'bg-red-500',
+                    info: 'bg-blue-500'
+                };
+                const toast = document.createElement('div');
+                toast.className = `${colors[type] || colors.success} text-white px-6 py-3 rounded-xl shadow-lg transform translate-x-full transition-transform duration-300 flex items-center gap-2`;
+                toast.innerHTML = `
+                    <i data-lucide="${type === 'error' ? 'alert-circle' : 'check-circle'}" class="w-5 h-5"></i>
+                    <span>${message}</span>
+                `;
+                container.appendChild(toast);
+                lucide.createIcons();
+                
+                // Animate in
+                requestAnimationFrame(() => {
+                    toast.classList.remove('translate-x-full');
+                });
+                
+                // Remove after delay
+                setTimeout(() => {
+                    toast.classList.add('translate-x-full');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+        };
+
+        const router = {
+            currentPage: 'home',
+            _sentinelObserver: null,
+            navigate: (page, param = null) => {
+                router.currentPage = page;
+                if (page === 'articles') {
+                    appState.articleVisibleCount = appState.articlePageSize;
+                }
+                if (page === 'life') {
+                    appState.lifeVisibleCount = appState.lifePageSize;
+                }
+                window.scrollTo({top: 0, behavior: 'smooth'});
+                document.getElementById('mobile-menu').classList.add('hidden');
+                router.render(param);
+            },
+            render: (param) => {
+                const app = document.getElementById('app');
+                let content = '';
+                switch(router.currentPage) {
+                    case 'home': content = components.Home(); break;
+                    case 'dashboard': content = components.Dashboard(); break;
+                    case 'articles': content = components.Articles(); break;
+                    case 'article': content = components.ArticleDetail(param); break;
+                    case 'life': content = components.Life(); break;
+                    case 'gratitude': content = components.Gratitude(); break;
+                    default: content = components.Home();
+                }
+                app.innerHTML = content;
+                lucide.createIcons();
+                router.afterRender();
+            },
+            afterRender: () => {
+                const root = document.getElementById('app');
+                if (root) {
+                    root.querySelectorAll('.markdown-body').forEach((el) => markdown.applyHighlight(el));
+                }
+
+                if (router._sentinelObserver) {
+                    try { router._sentinelObserver.disconnect(); } catch (e) { /* noop */ }
+                    router._sentinelObserver = null;
+                }
+
+                const createObserver = (cb) => {
+                    if (typeof IntersectionObserver === 'undefined') return null;
+                    return new IntersectionObserver((entries) => {
+                        if (entries.some(e => e.isIntersecting)) cb();
+                    }, { root: null, rootMargin: '200px', threshold: 0.01 });
+                };
+
+                if (router.currentPage === 'articles') {
+                    const sentinel = document.getElementById('articles-sentinel');
+                    if (sentinel) {
+                        router._sentinelObserver = createObserver(() => actions.loadMoreArticles());
+                        try { router._sentinelObserver?.observe(sentinel); } catch (e) { /* noop */ }
+                    }
+                }
+
+                if (router.currentPage === 'life') {
+                    const sentinel = document.getElementById('life-sentinel');
+                    if (sentinel) {
+                        router._sentinelObserver = createObserver(() => actions.loadMoreLife());
+                        try { router._sentinelObserver?.observe(sentinel); } catch (e) { /* noop */ }
+                    }
+                }
+            }
+        };
+
+        // Scroll Logic
+        window.onscroll = function() {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById("progress-bar").style.width = scrolled + "%";
+        };
+
+        // Boot
+        window.addEventListener('DOMContentLoaded', async () => {
+            articlesStore.ensureSeed();
+            lifeStore.ensureSeed();
+            themeManager.init();
+            await auth.init();
+            router.render();
+
+            setInterval(() => {
+                try {
+                    if (habitStore.shouldPromptNow()) habitStore.prompt();
+                } catch (e) {
+                    // noop
+                }
+            }, 60 * 1000);
+        });
+
+    </script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); filter: blur(5px); }
+            to { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+    </style>
+
+</body></html>
