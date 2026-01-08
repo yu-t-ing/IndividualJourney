@@ -24,6 +24,17 @@ exports.handler = async (event) => {
     const method = (event.httpMethod || 'GET').toUpperCase();
     const qs = event.queryStringParameters || {};
 
+    if ((qs.debug || '').toLowerCase() === 'env') {
+      return json(200, {
+        data: {
+          has_NETLIFY_DATABASE_URL: !!process.env.NETLIFY_DATABASE_URL,
+          has_NETLIFY_DATABASE_URL_UNPOOLED: !!process.env.NETLIFY_DATABASE_URL_UNPOOLED,
+          has_DATABASE_URL: !!process.env.DATABASE_URL,
+          node: process.version
+        }
+      });
+    }
+
     const id = parseIdFromPath(event.path || '');
 
     if (method === 'GET' && !id) {

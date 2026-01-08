@@ -110,6 +110,55 @@
             background: var(--bg-surface);
             color: var(--text-main);
         }
+
+        input,
+        textarea,
+        select {
+            color: var(--text-main);
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: var(--text-muted);
+            opacity: 0.6;
+        }
+
+        #article-editor .toastui-editor-contents,
+        #article-editor .toastui-editor-contents * {
+            color: var(--text-main);
+        }
+
+        #article-editor .toastui-editor-defaultUI .toastui-editor-md-container textarea {
+            color: var(--text-main);
+        }
+
+        #article-editor .toastui-editor-popup,
+        #article-editor .toastui-editor-dropdown-toolbar,
+        #article-editor .toastui-editor-toolbar-dropdown {
+            background: var(--bg-secondary);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+
+        #article-editor .toastui-editor-popup * {
+            color: var(--text-main);
+        }
+
+        #article-editor .toastui-editor-popup .toastui-editor-popup-body,
+        #article-editor .toastui-editor-popup .toastui-editor-popup-content {
+            background: var(--bg-secondary);
+        }
+
+        #article-editor .toastui-editor-popup ul,
+        #article-editor .toastui-editor-popup li {
+            background: transparent;
+        }
+
+        #article-editor .toastui-editor-popup li:hover,
+        #article-editor .toastui-editor-popup button:hover,
+        #article-editor .toastui-editor-popup a:hover {
+            background: var(--bg-surface-hover);
+        }
     </style>
 </head>
 <body class="font-sans antialiased min-h-screen relative selection:bg-[var(--accent)] selection:text-white text-[var(--text-main)] overflow-x-hidden bg-[var(--bg-gradient)]" style="background: var(--bg-gradient) !important;" data-version="1.2">
@@ -2027,7 +2076,7 @@
 
                                         <textarea id="gratitude-input" rows="3" placeholder="今天有哪些让你感到开心/感恩的事？（支持多行）"
                                             onkeydown="actions.handleGratitudeKeydown(event)"
-                                            class="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] transition-all text-[var(--text-main)] placeholder:text-[var(--text-muted)]/50 shadow-inner text-lg resize-none"></textarea>
+                                            class="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] transition-all text-[var(--text-main)] dark:text-white placeholder:text-[var(--text-muted)]/50 shadow-inner text-lg resize-none"></textarea>
                                     </div>
                                     <div class="mt-2 text-xs text-[var(--text-muted)]">提示：按 <span class="font-mono">Ctrl</span> + <span class="font-mono">Enter</span> 快速保存</div>
                                 ` : `
@@ -2507,13 +2556,13 @@
                             <div>
                                 <label class="block text-sm font-medium text-[var(--text-muted)] mb-2">全文（可直接编辑）</label>
                                 <textarea id="gratitude-detail-text" rows="8"
-                                    class="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] text-[var(--text-main)] resize-none"></textarea>
+                                    class="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] text-[var(--text-main)] dark:text-white resize-none"></textarea>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-[var(--text-muted)] mb-2">补充一条（不会覆盖原文）</label>
                                 <textarea id="gratitude-append-text" rows="3" placeholder="写下今天新的感恩..."
-                                    class="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] text-[var(--text-main)] resize-none"></textarea>
+                                    class="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] text-[var(--text-main)] dark:text-white resize-none"></textarea>
                             </div>
                         </div>
 
@@ -2849,7 +2898,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-[var(--text-muted)] mb-2">描述</label>
                                 <textarea id="life-desc" rows="3" placeholder="记录这一刻的心情..." 
-                                    class="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] text-[var(--text-main)] resize-none"></textarea>
+                                    class="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] text-[var(--text-main)] dark:text-white resize-none"></textarea>
                             </div>
                             
                             <div class="flex gap-3 justify-end pt-4">
